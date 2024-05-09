@@ -102,16 +102,16 @@ Pre normalized residual connection
 """
 
 class PreNormResidualConnection(nn.Module):
-  def __init__(
-		  self,
-		  norm,
-		  dropout: float = 0.,
-  ):
-	  super().__init__()
-	  self.dropout = nn.Dropout(dropout)
-	  self.layer_norm = norm
-  def forward(self, out, sublayer):
-	  return out + self.dropout(sublayer(self.layer_norm(out)))
+	def __init__(
+			self,
+			norm,
+			dropout: float = 0.,
+	) -> None:
+		super().__init__()
+		self.dropout = nn.Dropout(dropout)
+		self.layer_norm = norm
+	def forward(self, out, sublayer):
+		return out + self.dropout(sublayer(self.layer_norm(out)))
 
 
 """

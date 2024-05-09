@@ -162,5 +162,6 @@ class MagFormer(LightningModule):
 		return self.fc(x)
 	
 	def training_step(self, batch: Tensor) -> Tensor: 
-		
+        
 	def validation_step(self, batch:Tensor) -> None:
+		
