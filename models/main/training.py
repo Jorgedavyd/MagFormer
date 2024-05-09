@@ -33,6 +33,6 @@ if __name__ == "__main__":
             "X_seq_len": cli.model.X_seq_len,
             "architecture": cli.model.architecture,
             "n_heads": cli.model.n_heads,
-            "degree": cli.model.degree
+            "degree": cli.model.degree,
         }
     )
