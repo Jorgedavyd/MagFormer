@@ -3,10 +3,14 @@
 [![code-style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # MagFormer
-![image](https://github.com/Jorgedavyd/MagFormer/raw/main/docs/source/logo.png)
+
+<p align="center">
+  <img src="https://github.com/Jorgedavyd/MagFormer/raw/main/docs/source/logo.png" alt="Sublime's custom image"/>
+</p>
+
 This is the output of a long-lasting project that addressed CME interactions with our magnetosphere, other deprecated files can be found on my repositories related to Arasci and SMFGF. The first step was creating a data framework that allows a fast workflow: [CorKit](https://github.com/Jorgedavyd/corkit) and [StarStream](https://github.com/Jorgedavyd/StarStream) were first developed for the research community to have go directly to the next step of the machine learning pipeline. 
 
-![architecture]()
+![architecture]() 
 
 ## Data
 
