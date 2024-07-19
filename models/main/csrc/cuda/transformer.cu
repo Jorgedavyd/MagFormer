@@ -1,7 +1,7 @@
 // implementation of the cross transformer
 
 /*The general idea is to paralellize the forward method of both heads
-with kernelized implementations of grouped query self attention with a 
+with kernelized implementations of grouped query self attention with a
 residual layer all in one.
 The cross transformer will have three kernels that will be used in the forward pass:
 self attention
@@ -43,7 +43,7 @@ __global__ void GeneralSelfAttentionKernel (
     torch::PackedTensorAccessor32<scalar_t, 2, torch::RestrictPtrTraits> values,
     torch::PackedTensorAccessor32<scalar_t, 2, torch::RestrictPtrTraits> global_out,
     float[][] * Wq, float[][] * Wk, float[][] * Wv, float[][] * W_fc,
-    const unsigned int groups, const unsigned int n_queries, const unsigned int q_dim, 
+    const unsigned int groups, const unsigned int n_queries, const unsigned int q_dim,
     const unsigned int k_dim, const unsigned int v_dim, const unsigned int batch_size, const unsigned int seq_len,
     const float scale_factor, const unsigned int shared_query_size, const unsigned int shared_kv_size
 ) {
@@ -54,10 +54,10 @@ __global__ void GeneralSelfAttentionKernel (
     shared_value -> (seq, v_dim) -> (groups, s, head_dim)
 
     assertion: groups*n_queries*s*head_dim >= seq*q_dim
-    
+
     */
     extern __shared__ float sharedMemory[];
-    
+
     float* shared_query = sharedMemory;
     float* shared_key = shared_query + sequence_length * groups * head_dim;
     float* shared_value = shared_key + sequence_length * groups * head_dim;
@@ -68,19 +68,19 @@ __global__ void GeneralSelfAttentionKernel (
     const unsigned int y = threadIdx.y + b_x * blockDim.x;
     const unsigned int z = threadIdx.z + b_x * blockDim.x;
 
-    
+
     //Here, b_x works as a batch dimension, z makes the decision to choose between the query, key, value.
-    
+
     if (b_x < batch_size && z < 3) {
         switch z {
-            case 0: 
+            case 0:
                 shared_query[seq_len * y + x] = queries[b_x][y][x].item<float>();
                 __syncthreads();
-            case 1: 
-                shared_key[seq_len * y + x] = keys[b_x][y][x].item<float>(); 
+            case 1:
+                shared_key[seq_len * y + x] = keys[b_x][y][x].item<float>();
                 __syncthreads();
-            case 2: 
-                shared_value[seq_len * y + x] = values[b_x][y][x].item<float>(); 
+            case 2:
+                shared_value[seq_len * y + x] = values[b_x][y][x].item<float>();
                 __syncthreads();
     }
     }
@@ -89,12 +89,12 @@ __global__ void GeneralSelfAttentionKernel (
     __syncthreads();
 
     // compute the forward method of the weights
-    
+
 
     // Make the computation of the attention
 
     // Compute the softmax
-    
+
     // Put the value into global memory
     global_out[b_x][y][x] = out;
 
@@ -110,18 +110,18 @@ void ASSERTIONS (
 
 
     */
-    
+
 }
 
-torch::Tensor GeneralAttention (torch::Tensor * queries, torch::Tensor * keys, torch::Tensor * values, 
-                                    torch::Tensor * weight_q, torch::Tensor * weight_k, torch::Tensor * weight_v, 
+torch::Tensor GeneralAttention (torch::Tensor * queries, torch::Tensor * keys, torch::Tensor * values,
+                                    torch::Tensor * weight_q, torch::Tensor * weight_k, torch::Tensor * weight_v,
                                     torch::Tensor * weight_fc, const unsigned int groups, const unsigned int head_dim) {
     // Check assertions
     ASSERTIONS(queries, keys, values, weight_q, weight_k, weight_v, weight_fc, groups, head_dim)
 
     // Defining parameters for linear transformation
-    const unsigned int q_dim, k_dim, v_dim, batch_size, sequence_length; 
-    
+    const unsigned int q_dim, k_dim, v_dim, batch_size, sequence_length;
+
     batch_size = queries.size(0);
     sequence_length = queries.size(1);
 
@@ -137,7 +137,7 @@ torch::Tensor GeneralAttention (torch::Tensor * queries, torch::Tensor * keys, t
 
     // Defining the tensor that will be allocated in global memory waiting for the kernel execution.
     torch::Tensor out = torch::empty({batch_size, sequence_length, q_dim});
-    
+
     // Defining the weights and biases into constant memory.
     __constant__ float Wq[q_dim][groups * n_queries * head_dim];
     __constant__ float Wk[k_dim][groups * head_dim];
@@ -153,16 +153,16 @@ torch::Tensor GeneralAttention (torch::Tensor * queries, torch::Tensor * keys, t
     /*
     # Kernel general overview:
     ## Resources:
-    
+
     register:
         float ...
 
     shared_memory:
-        shared_query[s * n_queries * head_dim], shared_key[s * head_dim], shared_value[s * head_dim], shared_out[s * n_queries * head_dim]  
-    
+        shared_query[s * n_queries * head_dim], shared_key[s * head_dim], shared_value[s * head_dim], shared_out[s * n_queries * head_dim]
+
     constant_memory:
         Wq[], Wk[], Wv[], W_fc[]
-    
+
     global_memory:
         torch::Tensor queries, keys, values, out;
 
