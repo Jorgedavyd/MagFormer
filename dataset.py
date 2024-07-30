@@ -96,14 +96,14 @@ class L1Base(_Base):
 class ACEDataset(L1Base, ACE):
     def __init__(self, base_scrap_date: List[Tuple[datetime]], sequence_length: timedelta, dst_sl: timedelta, step_size: timedelta, l1: bool = True) -> None:
         super().__init__(base_scrap_date, sequence_length, dst_sl, step_size, l1)
-    
+
     def prepare_data(self):
         # download -> data prep -> torch
 
 class DSCOVRDataset(L1Base, DSCOVR):
     def __init__(self, base_scrap_date: List[Tuple[datetime]], sequence_length: timedelta, dst_sl: timedelta, step_size: timedelta, l1: bool = True) -> None:
         super().__init__(base_scrap_date, sequence_length, dst_sl, step_size, l1)
-    
+
     def prepare_data(self):
         # download -> data prep -> torch
 
@@ -116,13 +116,13 @@ class DstDataset(_Base, Dst):
             dst_sl: timedelta,
     ):
         self.idx: Callable[[int], slice]= lambda idx:  DstBasedIdx.DstIdx(idx, base_scrap_date[0], dst_sl)
-        self.sl: timedelta = dst_sl 
+        self.sl: timedelta = dst_sl
         self.scrap_date: Tuple[datetime] = DstBasedScrap.Dst(base_scrap_date, dst_sl)
 
     def prepare_dataset(self) -> None:
         # download -> data prep -> torch
         self.dst = self.data_prep(self.scrap_date)
-        
+
 class SwarmDataset(_Base, SWARM):
     def __init__(
             self,
@@ -136,10 +136,10 @@ class SwarmDataset(_Base, SWARM):
         self.sl = dst_sl
         self.scrap_date = DstBasedScrap.SWARM(base_scrap_date, dst_sl)
         self.step_size = step_size
-    
+
     def prepare_data(self) -> None:
         # download -> data_prep -> tensor
-        
+
         # data prep
         self.dataset = [
             self.MAG_ION().data_prep(self.scrap_date, self.step_size),
@@ -147,7 +147,7 @@ class SwarmDataset(_Base, SWARM):
             self.FAC().data_prep(self.scrap_date, self.step_size),
         ]
         self.dataset = torch.from_numpy(pd.concat(self.dataset, axis = 1).values)
-    
+
 class _ImageryBase(_Base):
     def __init__(
             self,
@@ -165,7 +165,7 @@ class _ImageryBase(_Base):
 
     def prepare_data(self, idx) -> None:
         # download -> prepare -> return
-    
+
 # Dataset for all tasks involved
 class LASCODataset(_ImageryBase):
     def __init__(
@@ -190,7 +190,7 @@ class SDODataset(_ImageryBase, SDO):
         super().__init__(base_scrap_date, step_size, dst_sl)
     def prepare_data(self, idx) -> None:
         # download -> prepare -> return
-        
+
 
 
 # Dataset for all tasks involved
@@ -217,7 +217,7 @@ class DataModule(LightningDataModule):
         self.val_ds = val_ds
         self.test_ds = test_ds
         #Done
-    
+
     def train_dataloader(self) -> DataLoader:
         return DataLoader(
             self.train_ds,
@@ -226,7 +226,7 @@ class DataModule(LightningDataModule):
             num_workers = 12,
             pin_memory=True
         )
-    
+
     def val_dataloader(self) -> DataLoader:
         return DataLoader(
             self.val_ds,
@@ -235,7 +235,7 @@ class DataModule(LightningDataModule):
             num_workers = 12,
             pin_memory=True
         )
-    
+
     def test_dataloder(self):
         return DataLoader(
             self.test_ds,
@@ -244,7 +244,7 @@ class DataModule(LightningDataModule):
             num_workers = 12,
             pin_memory=True
         )
-    
+
 
 class SyntheticTask(DataModule):
     def __init__(self, batch_size: int, train_p: float) -> None:
@@ -256,14 +256,14 @@ class SyntheticTask(DataModule):
     def __getitem__(self, idx) -> Tuple[Tensor, ...]:
 
     def __len__(self):
-        
+
 
 class MultiDataset(Dataset):
     def __init__(self, *datasets) -> None:
         self.datasets = datasets
-    
+
     def __getitem__(self, index) -> Tuple[Tensor, ...]:
-        return (dataset[index] for dataset in self.datasets)    
+        return (dataset[index] for dataset in self.datasets)
 
 
 class Reconstruction:
@@ -277,7 +277,7 @@ class Reconstruction:
         the anomaly data for better results.
         """
         def __init__(
-                self, 
+                self,
                 base_scrap_date_list: List[datetime],
                 l1_sl: timedelta,
                 dst_sl: timedelta,
@@ -313,16 +313,16 @@ class Reconstruction:
                 self.l2_ace[index],
                 self.l2_dscovr[index],
             )
-        
+
         def __len__(self):
             return sum([len(dataset) for dataset in self.dataset])
-        
+
     class ImageReconstruction(DataModule):
         """
         For both LASCO and SDO, and whatever imagery data
         you have.
         """
-        
+
         corrupted = tt.Compose([
             tt.ToTensor(),
             tt.RandomErasing(p = 1)
@@ -342,7 +342,7 @@ class Reconstruction:
             super().__init__(batch_size, train_p)
             self.dataset = dataset
             self.base_scrap_date_list = base_scrap_date_list
-        
+
         def prepare_data(self) -> None:
             self.dataset = self.dataset(self.base_scrap_date_list)
             self.dataset.prepare_data()
@@ -354,4 +354,4 @@ class Reconstruction:
             x_hat = self.corrupted(index)
             x = self.normal(index)
             return x_hat, x
-        
+
