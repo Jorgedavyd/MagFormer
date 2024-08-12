@@ -1,18 +1,20 @@
 from torch import Tensor, nn
 import pandas as pd
 from datetime import datetime, timedelta
-from typing import List, Sequence
+from typing import List, Tuple
 import torch
 from utils import interval_time
 
+dtype: str = '%y/%m/%d'
+
 def soho_path(date_: datetime) -> str:
-    return f"./data/SOHO/{date_.strftime('YY/MM/DD')}.csv"
+    return f"./data/SOHO/{date_.strftime(dtype)}.csv"
 
 def wind_path(date_: datetime) -> str:
-    return f"./data/WIND/{date_.strftime('YY/MM/DD')}.csv"
+    return f"./data/WIND/{date_.strftime(dtype)}.csv"
 
 def new_path(date_: datetime) -> str:
-    return f"./data/DSCOVR/{date_.strftime('YY/MM/DD')}.csv"
+    return f"./data/DSCOVR/{date_.strftime(dtype)}.csv"
 
 def create_df(input: Tensor, scrap_date: datetime, delta_t: timedelta) -> pd.DataFrame:
     # Create the dataframe

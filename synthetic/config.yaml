@@ -7,15 +7,19 @@ trainer: # trainer arguments
   precision: 16
 
 model:
-  class_path:
+  class_path: synthetic.model.Model
   dict_kwargs:
     lr: 1e-2
     weight_decay: 1e-2
+    hidden_size: 8
+    layers: 4
 
 data:
-  class_path: data.DataModule
+  class_path: synthetic.dataset.DataModule
   init_args:
-    type_dataset: mnist
     batch_size: 12
     pin_memory: true
     num_workers: 8
+    train_p: 0.8
+    step_size: 5
+

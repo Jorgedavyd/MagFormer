@@ -1,20 +1,36 @@
 from torch import nn, Tensor
-import torch
-from lightorch.nn.sequential import *
+from lightorch.nn.sequential.residual import ResidualLSTM, ResidualGRU
 from lightorch.training.supervised import Module
+from typing import Dict
 
-class Model1(Module):
-    def __init__(self, input_size: int, layers: int, **hparams) -> None:
+input_size: int = 6
+out_size: int = 4 # Define
+
+class Model1(ResidualLSTM):
+    def __init__(self, hidden_size: int, layers: int) -> None:
+        super().__init__(input_size, hidden_size, layers)
+        self.fc = nn.Linear(hidden_size, out_size)
+    def forward(self, x: Tensor) -> None:
+        return self.fc(super().forward(self, x))
+
+class Model2(ResidualGRU):
+    def __init__(self, hidden_size: int, layers: int) -> None:
+        super().__init__(input_size, hidden_size, layers)
+        self.fc = nn.Linear(hidden_size, out_size)
+    def forward(self, x: Tensor) -> None:
+        return self.fc(super().forward(self, x))
+
+class Model(Module):
+    def __init__(self, **hparams) -> None:
         super().__init__(**hparams)
-        self.model = ResidualLSTM(input_size, layers)
-        self.criterion = #define criterion
+        self.model = Model1(hparams['hidden_size'], hparams['layers'])
+
     def forward(self, x: Tensor) -> Tensor:
         return self.model(x)
 
-class Model2(Module):
-    def __init__(self, input_size: int, layers: int, **hparams) -> None:
-        super().__init__(**hparams)
-        self.model = ResidualGRU(input_size, layers)
-        self.criterion = #define criterion
-    def forward(self, x: Tensor) -> Tensor:
-        return self.model(x)
+    def loss_forward(self, batch:Tensor, idx: int) -> Dict[str, Tensor | float]:
+        out = self.model(batch[0])
+        return dict(
+            label = out,
+            target =batch[1],
+        )
