@@ -13,7 +13,7 @@ from starstream.downloaders import SOHO, WIND, ACE, DSCOVR, SWARM, SDO, Dst
 from datetime import timedelta, datetime
 import pandas as pd
 import torch
-from typing import List, Tuple, Dict, Callable
+from typing import Any, List, Tuple, Dict, Callable, Sequence
 from torch import Tensor
 
 """
@@ -27,7 +27,7 @@ relative_scrap_date: base_scrap_date shifted within the range of
 # Utils for data synchronization
 
 ## Compute the sequence length from the datset of input date scrap_date
-def dataset_len(scrap_date, dst_sl: timedelta):
+def dataset_len(scrap_date: Tuple[datetime, datetime], dst_sl: timedelta):
     delta_t = scrap_date[-1] - scrap_date[0]
     return (delta_t - dst_sl)/timedelta(hours = 1)
 
@@ -70,85 +70,94 @@ class DstBasedScrap:
     def L1(scrap_date: tuple[datetime, datetime], l1_sl: timedelta):
         return scrap_date[0] - l1_sl, scrap_date[-1]
 
-class _Base(Dataset):
-    def __len__(self):
-        return self.len_dataset
-    def __getitem__(self, idx) -> Tensor:
-        return self.dataset[self.idx(idx)]
-
-## Datasets for satellites
-class L1Base(_Base):
+class L1DatasetLevel1(Dataset):
     def __init__(
             self,
-            base_scrap_date: List[Tuple[datetime, datetime]],
+            dataset: pd.DataFrame,
+            scrap_date: Tuple[datetime, datetime],
             sequence_length: timedelta,
             dst_sl: timedelta,
             step_size: timedelta,
             l1: bool = True,
     ) -> None:
         self.sequence_length = sequence_length
-        self.len_dataset = dataset_len(base_scrap_date, dst_sl)
-        self.idx = lambda idx: DstBasedIdx.L1Idx(idx, base_scrap_date[0], sequence_length)
+        self.len_dataset = dataset_len(scrap_date, dst_sl)
+        self.idx = lambda idx: DstBasedIdx.L1Idx(idx, scrap_date[0], sequence_length)
         self.step_size = step_size
-        self.scrap_date_list = DstBasedScrap.L1(base_scrap_date, sequence_length)
+        self.scrap_date_list = DstBasedScrap.L1(scrap_date, sequence_length)
         self.l1 = l1
+        self.dataset = dataset
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
+        raise NotImplementedError('Not implemented module')
+    def __len__(self):
+        return self.len_dataset
+    def __getitem__(self, idx) -> Tensor:
+        return torch.from_numpy(self.dataset[self.idx(idx)].values)
 
-class ACEDataset(L1Base, ACE):
-    def __init__(self, base_scrap_date: List[Tuple[datetime]], sequence_length: timedelta, dst_sl: timedelta, step_size: timedelta, l1: bool = True) -> None:
-        super().__init__(base_scrap_date, sequence_length, dst_sl, step_size, l1)
+class DatasetLevel2(Dataset):
+    def __init__(self, base_class, base_scrap_date_list: List[Tuple[datetime, datetime]]) -> None:
+        self.datasets = [base_class(scrap_date) for scrap_date in base_scrap_date_list]
 
-    def prepare_data(self):
-        # download -> data prep -> torch
+    def __len__(self) -> int:
+        return sum([len(dataset) for dataset in self.datasets])
 
-class DSCOVRDataset(L1Base, DSCOVR):
-    def __init__(self, base_scrap_date: List[Tuple[datetime]], sequence_length: timedelta, dst_sl: timedelta, step_size: timedelta, l1: bool = True) -> None:
-        super().__init__(base_scrap_date, sequence_length, dst_sl, step_size, l1)
+    def __getitem__(self, idx) -> Tensor:
+        dataset_idx = 0
+        cumulative_length = len(self.datasets[0])
+        while idx >= cumulative_length:
+            dataset_idx += 1
+            cumulative_length += len(self.datasets[dataset_idx])
+        if dataset_idx > 0:
+            idx -= sum(len(self.datasets[i]) for i in range(dataset_idx))
 
-    def prepare_data(self):
-        # download -> data prep -> torch
+        return self.datasets[dataset_idx][idx]
 
+class DatasetLevel3(Dataset):
+    def __init__(self, datasets: Sequence[Any], base_scrap_date_list: List[Tuple[datetime, datetime]]) -> None:
+        self.datasets = [dataset(base_scrap_date_list) for dataset in datasets]
+    def __len__(self) -> int:
+        return len(self.datasets[0])
+    def __getitem__(self, idx) -> Sequence[Tensor]:
+        return [dataset[idx] for dataset in self.datasets]
 
+class WINDDataset(L1DatasetLevel1):
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
+        dataset = [WIND.TDP_PM(), WIND.MAG()]
+        dataset = list(map(dataset, lambda x: x.data_prep(scrap_date, step_size)))
+        return pd.concat(dataset, axis = 1)
 
-class DstDataset(_Base, Dst):
-    def __init__(
-            self,
-            base_scrap_date: tuple[datetime, datetime],
-            dst_sl: timedelta,
-    ):
-        self.idx: Callable[[int], slice]= lambda idx:  DstBasedIdx.DstIdx(idx, base_scrap_date[0], dst_sl)
-        self.sl: timedelta = dst_sl
-        self.scrap_date: Tuple[datetime] = DstBasedScrap.Dst(base_scrap_date, dst_sl)
+class ACEDataset(L1DatasetLevel1):
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
+        dataset = [ACE.SWEPAM(), ACE.MAG(), ACE.SIS(), ACE.EPAM()]
+        dataset =  list(map(dataset, lambda x: x.data_prep(scrap_date, step_size)))
+        return pd.concat(dataset, axis = 1) ## TODO REVISAR LOS PREPS
 
+class DSCOVRDataset(L1DatasetLevel1):
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
+        return DSCOVR().data_prep(scrap_date, step_size)
+
+class SOHODataset(L1DatasetLevel1):
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
+        dataset = [SOHO.CELIAS_PM(), SOHO.CELIAS_SEM()]
+        dataset =  list(map(dataset, lambda x: x.data_prep(scrap_date, step_size)))
+        return pd.concat(dataset, axis = 1) ## TODO REVISAR LOS PREPS
+
+class DstDataset(L1DatasetLevel1):
     def prepare_dataset(self) -> None:
-        # download -> data prep -> torch
-        self.dst = self.data_prep(self.scrap_date)
+        return Dst().data_prep()
 
-class SwarmDataset(_Base, SWARM):
-    def __init__(
-            self,
-            base_scrap_date: tuple[datetime,datetime],
-            step_size: timedelta,
-            dst_sl: timedelta,
-    ):
-        # Compute the index based on the relative time
-        self.idx = lambda idx: DstBasedIdx.SWARMIdx(idx,base_scrap_date[0], dst_sl)
-        self.len_dataset = dataset_len(base_scrap_date, dst_sl)
-        self.sl = dst_sl
-        self.scrap_date = DstBasedScrap.SWARM(base_scrap_date, dst_sl)
-        self.step_size = step_size
-
-    def prepare_data(self) -> None:
-        # download -> data_prep -> tensor
-
+class SwarmDataset(L1DatasetLevel1):
+    def prepare_data(self, scrap_date, step_size) -> pd.DataFrame:
         # data prep
-        self.dataset = [
-            self.MAG_ION().data_prep(self.scrap_date, self.step_size),
-            self.EFI().data_prep(self.scrap_date, self.step_size),
-            self.FAC().data_prep(self.scrap_date, self.step_size),
+        dataset = [
+            SWARM.MAG_ION(scrap_date, step_size),
+            SWARM.EFI(scrap_date, step_size),
+            SWARM.FAC(scrap_date, step_size),
         ]
-        self.dataset = torch.from_numpy(pd.concat(self.dataset, axis = 1).values)
+        dataset =  list(map(dataset, lambda x: x.data_prep(scrap_date, step_size)))
+        return pd.concat(dataset, axis = 1) ## TODO REVISAR LOS PREPS
 
-class _ImageryBase(_Base):
+class SunDatasetLevel1(Dataset):
     def __init__(
             self,
             base_scrap_date: tuple[datetime,datetime],
@@ -162,9 +171,11 @@ class _ImageryBase(_Base):
         self.sl = dst_sl
         self.scrap_date = DstBasedScrap.Sun(base_scrap_date, dst_sl)
         self.step_size = step_size
+    def __len__(self) -> int:
+        return self.len_dataset
+    def __getitem__(self, index) -> Tensor:
 
-    def prepare_data(self, idx) -> None:
-        # download -> prepare -> return
+    def prepare_data(self) -> None:
 
 # Dataset for all tasks involved
 class LASCODataset(_ImageryBase):
@@ -199,20 +210,20 @@ class SDODataset(_ImageryBase, SDO):
 Supervised synthetic data creation:
 model: SOHO, WIND ----> DSCOVR, ACE
 """
-class DataModule(LightningDataModule):
+class DefaultDataModule(LightningDataModule):
 
-    def __init__(self, batch_size: int, train_p: float) -> None:
+    def __init__(self, dataset: DatasetLevel3, batch_size: int, train_p: float) -> None:
         super().__init__()
+        self.dataset = dataset
         self.train_p = train_p
         self.batch_size = batch_size
-
     def setup(self) -> None:
         # Getting the random_split set
         train_len = round(len(self) * self.train_p)
         val_len = (len(self) - train_len)//2
         test_len = len(self) - (train_len + val_len)
         # Random split on datasets
-        train_ds, val_ds, test_ds = random_split(self, [train_len, val_len, test_len])
+        train_ds, val_ds, test_ds = random_split(self.dataset, [train_len, val_len, test_len])
         self.train_ds = train_ds
         self.val_ds = val_ds
         self.test_ds = test_ds
@@ -244,7 +255,6 @@ class DataModule(LightningDataModule):
             num_workers = 12,
             pin_memory=True
         )
-
 
 class SyntheticTask(DataModule):
     def __init__(self, batch_size: int, train_p: float) -> None:
@@ -295,7 +305,7 @@ class Reconstruction:
                 if scrap_date[0] < datetime(2016, 7, 31) or scrap_date[-1] > datetime(2021, 10, 31):
                     raise ValueError('Cannot train on this range given the data access')
 
-        def prepare_data(self) -> None:
+        def prepare_data(self, scrap_date, step_size) -> None:
             ## this training will be valid for the current intervals 2016 -> 2021
             self.l1_ace = ACEDataset(base_scrap_date_list, l1 = True)
             self.l1_dscovr = DSCOVRDataset(base_scrap_date_list, l1 = True)
