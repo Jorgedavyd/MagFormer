@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 from typing import List, Tuple
 import torch
 from utils import interval_time
+from numpy.typing import NDArray
 
+## path utils
 dtype: str = '%y/%m/%d'
 
 def soho_path(date_: datetime) -> str:
@@ -16,15 +18,19 @@ def wind_path(date_: datetime) -> str:
 def new_path(date_: datetime) -> str:
     return f"./data/DSCOVR/{date_.strftime(dtype)}.csv"
 
-def create_df(input: Tensor, scrap_date: datetime, delta_t: timedelta) -> pd.DataFrame:
-    # Create the dataframe
+## Dataframe utils
+def create_df(input: Tensor, scrap_date: List[datetime], delta_t: timedelta) -> pd.DataFrame:
+    array: NDArray = input.detach().cpu().squeeze(0).numpy()
+    start_date, end_date = scrap_date
+    time_index = pd.date_range(start=start_date, end=end_date, freq=delta_t)
+    df = pd.DataFrame(data=array, index=time_index)
+    return df
 
-def save_data(input: Tensor, scrap_date: List[datetime], delta_t: timedelta) -> None:
-    for date_ in scrap_date:
-        df = create_df(input, date_, delta_t)
-        df.to_csv(new_path(date_))
+def save_data(input: Tensor, list_date: List[datetime], delta_t: timedelta) -> None:
+    for date_ in list_date:
+        create_df(input, date_, delta_t).to_csv(new_path(date_))
 
-def model_pipeline(scrap_date_list: List[Tuple[datetime, datetime]], model_path = './models/main.pt', delta_t: timedelta = timedelta(minutes = 5)) -> None:
+def model_pipeline(scrap_date_list: List[Tuple[datetime, datetime]], model_path = './synthetic/model.pt', delta_t: timedelta = timedelta(minutes = 5)) -> None:
     model = torch.jit.load(model_path)
     for scrap_date_tuple in scrap_date_list:
         scrap_date: List[datetime] = interval_time(scrap_date_tuple)

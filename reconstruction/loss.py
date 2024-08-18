@@ -1,4 +1,4 @@
-from lightorch.nn.criterions import LagrangianFunctional
+from lightorch.nn.criterions import LagrangianFunctional, ELBO
 
 class Loss(LagrangianFunctional):
     def __init__(self, *args, **kwargs) -> None:

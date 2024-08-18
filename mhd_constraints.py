@@ -319,3 +319,6 @@ class NoiseLoss(nn.Module):
     def compute(l1, l2):
         # (B,S,I) x (B,S,I) -> (B,1)
         return F.mse_loss(l1, l2, reduction="none").mean(dim=(1, 2))
+
+
+#TODO  mhd -> lightorch
