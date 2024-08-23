@@ -32,5 +32,5 @@ class Model(Module):
         out = self.model(batch[0])
         return dict(
             label = out,
-            target =batch[1],
+            target = batch[1],
         )

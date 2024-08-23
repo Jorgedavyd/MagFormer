@@ -8,9 +8,9 @@
   <img src="https://github.com/Jorgedavyd/MagFormer/raw/main/docs/source/logo.png" height = 350 width = 350/>
 </p>
 
-This is the output of a long-lasting project that addressed CME interactions with our magnetosphere, other deprecated files can be found on my repositories related to Arasci and SMFGF. The first step was creating a data framework that allows a fast workflow: [CorKit](https://github.com/Jorgedavyd/corkit) and [StarStream](https://github.com/Jorgedavyd/StarStream) were first developed for the research community to have go directly to the next step of the machine learning pipeline. 
+This is the output of a long-lasting project that addressed CME interactions with our magnetosphere, other deprecated files can be found on my repositories related to Arasci and SMFGF. The first step was creating a data framework that allows a fast workflow: [CorKit](https://github.com/Jorgedavyd/corkit) and [StarStream](https://github.com/Jorgedavyd/StarStream) were first developed for the research community to have go directly to the next step of the machine learning pipeline.
 
-![architecture]() 
+![architecture]()
 
 ## Data
 
@@ -38,7 +38,7 @@ NOT PUBLISHED YET
 }
 ```
 
-## Contact  
+## Contact
 
 - [Linkedin](https://www.linkedin.com/in/jorge-david-enciso-mart%C3%ADnez-149977265/)
 - Email: jorged.encyso@gmail.com

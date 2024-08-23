@@ -21,5 +21,4 @@ class criterion(LighTorchLoss):
                 factors = {name: factor for name, factor in zip(labels, factor),
         )
     def forward(self, x: Tensor) -> Tensor:
-
-
+        return out

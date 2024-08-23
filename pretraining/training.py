@@ -1,5 +1,10 @@
 from lightorch.training.cli import trainer
-from .model import
+from .model import Model
+
 if __name__ == '__main__':
-    trainer()
+    trainer(
+        seed = 123,
+        precision = 'high',
+        deterministic = True,
+    )
 

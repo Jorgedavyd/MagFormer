@@ -2,6 +2,5 @@ from corkit import downloader
 from .dates import scrap_date_list
 
 if __name__ == '__main__':
-    downloader(
-        scrap_date_list,
-    )
+    down = downloader('c2', './data/SOHO/LASCO')
+    down(scrap_date_list)
