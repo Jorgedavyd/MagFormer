@@ -1,8 +1,8 @@
-from starstream import SDO
-from .dates import scrap_date_list
+from starstream import SDO, DataDownloading
+from date_prep import general_dates
 
 if __name__ == '__main__':
-    DataDownloader(
+    DataDownloading(
         SDO.AIA_HR(),
-        scrap_date_list
+        general_dates('post_2010')
     )

@@ -14,15 +14,15 @@ def date_union(first_date: datetime, second_scrap_date: Tuple[datetime, datetime
         return second_scrap_date[0], first_date + timedelta(days = 2)
 
 
-def general_dates(name: str, model_type: str) -> List[Tuple[datetime, datetime]]:
-    path: str = f'./{model_type}/download/{name}.txt'
+def general_dates(name: str) -> List[Tuple[datetime, datetime]]:
+    path: str = f'./{name}.txt'
     assert (os.path.exists(path)), "Not valid model_type or name, path not found"
     with open(path, 'r') as file:
         lines = file.readlines()
         dates = map(lambda x: datetime.strptime(x.split()[1], '%Y/%m/%d'), lines)
         scrap_date_list: List[Tuple[datetime, datetime]] = []
         for date in dates:
-            if scrap_date_list[0] is not None:
+            if len(scrap_date_list) != 0:
                 match_flag: bool = False
                 for idx, scrap_date in enumerate(scrap_date_list):
                     if main_condition(date, scrap_date[0]) or main_condition(date, scrap_date[1]):

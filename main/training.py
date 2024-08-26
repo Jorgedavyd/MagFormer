@@ -1,9 +1,8 @@
 from lightorch.training.cli import trainer
-from ...data import FullDataModule
 
 if __name__ == '__main__':
     trainer(
-        FullDataModule,
+        precision = 'high',
         deterministic=True,
         seed=123
     )

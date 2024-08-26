@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-fDatasetom date_prep import general_dates
+from date_prep import general_dates
 from ..dataset import ACEDataset, DSCOVRDataset, DatasetLevel2, DatasetLevel3, DefaultDataModule, WINDDataset, SOHODataset
 from torch import Tensor
 import torch
@@ -24,6 +24,6 @@ class SyntheticTask(DatasetLevel3):
 
 class DataModule(DefaultDataModule):
     def __init__(self, batch_size: int, num_workers: int, pin_memory: bool, train_p: float, step_size: int) -> None:
-        base_scrap_date: List[Tuple[datetime, datetime]] = general_dates('training', 'synthetic')
+        base_scrap_date: List[Tuple[datetime, datetime]] = general_dates('post_2016')
         step_size: timedelta = timedelta(minutes = step_size)
         super().__init__(SyntheticTask(base_scrap_date, step_size), batch_size, num_workers, pin_memory, train_p)

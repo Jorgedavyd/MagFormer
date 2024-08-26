@@ -1,8 +1,7 @@
 import optuna
 from lightorch import htuning
-from .transformer import MagFormer
-from ...data import TotalDataModule
-
+from .transformer import MainBackbone
+from .dataset import datamodule
 
 def define_hyp(trial: optuna.trial.Trial):
 
@@ -31,10 +30,10 @@ def define_hyp(trial: optuna.trial.Trial):
 
 if __name__ == '__main__':
     htuning(
-        model_class = MagFormer,
+        model_class = MainBackbone,
         hparam_objective = define_hyp,
-        datamodule = TotalDataModule,
-        valid_metrics = 'MSE',
+        datamodule = datamodule,
+        valid_metrics = 'MSE', # TODO: Definir
         directions = 'minimize',
         precision = 'medium',
         n_trials = 25,

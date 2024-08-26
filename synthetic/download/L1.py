@@ -7,8 +7,8 @@ from typing import Tuple, List
 
 if __name__ == '__main__':
     scrap_date_list: List[Tuple[datetime, datetime]] = merge_scrap_date_lists(
-            general_dates('training', 'synthetic'),
-            general_dates('inference', 'synthetic')
+            general_dates('post_2016'),
+            general_dates('pre_2016')
     )
     asyncio.run(DataDownloading(
         [DSCOVR(), # Defining the label

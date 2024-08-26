@@ -1,8 +1,10 @@
 from lightorch.nn import criterions
+from main.transformer import JointPositionalEncoding
 from torch import nn, Tensor
 from ..pretraining import Main
 from lightorch.nn.transformer import CrossTransformer
 
+#TODO: Define Magformer with cross transformer from lightorch
 class MagFormer(CrossTransformer):
     def __init__(self, LASCO_SDO_model_path: str,  ) -> None:
         super().__init__()

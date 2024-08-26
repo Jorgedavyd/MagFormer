@@ -13,7 +13,7 @@ from starstream.downloaders import SOHO, WIND, ACE, DSCOVR, SWARM, SDO, Dst
 from datetime import timedelta, datetime
 import pandas as pd
 import torch
-from typing import Any, List, Tuple, Dict, Callable, Sequence
+from typing import List, Tuple, Sequence
 from torch import Tensor
 
 """
@@ -347,3 +347,5 @@ class Reconstruction:
             x = self.normal(index)
             return x_hat, x
 
+# TODO: Review this code
+# TODO: Define carefully all of the data_prep members
