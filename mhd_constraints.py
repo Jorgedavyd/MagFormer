@@ -10,8 +10,8 @@ from math import sqrt
 Physics informed loss
 """
 
-
 class calc:
+    @staticmethod
     def grad(F: torch.Tensor, position: torch.Tensor, edge_order=1):
 
         df_dx = torch.gradient(

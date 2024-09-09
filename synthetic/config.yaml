@@ -1,4 +1,4 @@
-trainer: # trainer arguments
+trainer:
   logger: true
   enable_checkpointing: true
   max_epochs: 250

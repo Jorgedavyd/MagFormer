@@ -1,6 +1,5 @@
 from lightorch.nn.criterions import LighTorchLoss
 from torch import nn, Tensor
-
 from mhd_constraints import calc, PIConstraint
 
 class criterion(LighTorchLoss):

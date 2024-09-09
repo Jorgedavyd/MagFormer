@@ -1,7 +1,8 @@
 from torch import Tensor, nn
 import pandas as pd
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from dateutil.relativedelta import relativedelta
+from typing import List, Tuple, Union
 import torch
 from utils import interval_time
 from numpy.typing import NDArray
@@ -51,3 +52,44 @@ def get_data(scrap_date: List[datetime]) -> Tensor:
         main_df = pd.concat([main_df, df], axis = 0)
 
     return torch.from_numpy(main_df.values).unsqueeze(0)
+
+def timedelta_to_freq(timedelta_obj) -> str:
+    total_seconds = timedelta_obj.total_seconds()
+
+    if total_seconds % 1 != 0:
+        raise ValueError("Timedelta must represent a whole number of seconds")
+
+    days = total_seconds // (24 * 3600)
+    hours = (total_seconds % (24 * 3600)) // 3600
+    minutes = ((total_seconds % (24 * 3600)) % 3600) // 60
+    seconds = ((total_seconds % (24 * 3600)) % 3600) % 60
+
+    freq_str = ""
+
+    if days > 0:
+        freq_str += str(int(days)) + "day"
+    if hours > 0:
+        freq_str += str(int(hours)) + "hour"
+    if minutes > 0:
+        freq_str += str(int(minutes)) + "min"
+    if seconds > 0:
+        freq_str += str(int(seconds)) + "sec"
+
+    return freq_str
+
+
+def datetime_interval(
+    init: datetime,
+    last: datetime,
+    step_size: Union[relativedelta, timedelta],
+    output_format: str = "%Y%m%d",
+) -> List[str]:
+    current_date = init
+    date_list = []
+    while current_date <= last:
+        date_list.append(current_date.strftime(output_format))
+        current_date += step_size
+    return date_list
+
+
+
