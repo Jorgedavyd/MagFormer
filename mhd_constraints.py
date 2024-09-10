@@ -1,8 +1,9 @@
+from typing import List
 import torch
 from datetime import timedelta
 from torch import nn, Tensor
 from torch.utils.data import DataLoader
-from lightorch.nn.criterions import LighTorchLoss
+from lightorch.nn.criterions import LighTorchLoss, Loss
 from scipy.constants import mu_0, epsilon_0, c
 import torch.nn.functional as F
 from math import sqrt
@@ -127,133 +128,149 @@ def gamma(v):
     return (sqrt(1 - (v**2 / c**2))) ** -1
 
 
-class IdealMHD(nn.Module):
 
-    def __init__(self, step_size, edge_order):
+
+class IdealMHD(nn.Module):
+    def __init__(
+            self,
+            step_size: timedelta = timedelta(minutes = 5),
+            edge_order: int = 1
+    ) -> None:
         super().__init__()
         self.step_size = step_size
         self.edge_order = edge_order
 
-    def GaussLawMagnetismConstraint(self, B: torch.Tensor, r: torch.Tensor):
-        """
-        B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
-        r: position of the spacecraft | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return calc.div(B, r, self.edge_order).mean()
-
-    def GaussLawElectrostaticConstraint(
-        self, E: torch.Tensor, sigma: float, r: torch.Tensor
-    ):
-        """
-        E: electric field | torch.tensor | (batch_size, sequence_length, 3)
-        sigma: charge density | torch.tensor | (batch_size, sequence_length)
-        r: position of the spacecraft | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return (calc.div(E, r, self.edge_order) - (sigma / epsilon_0)).mean()
-
-    def DriftVelocity(self, B: torch.Tensor, E: torch.Tensor, v_drift: torch.Tensor):
-        """
-        B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
-        E: electric field | torch.tensor | (batch_size, sequence_length, 3)
-        v_drift: drift velocity | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return (
-            (torch.cross(E, B, dim=-1) / torch.sum(B, dim=-1, keepdim=True)) - v_drift
-        ).mean()
-
-    def ContinuityConstraint(self, rho: torch.Tensor, v: torch.Tensor):
-        """
-        rho: mass density | torch.tensor | (batch_size, sequence_length)
-        v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return ((calc.dF_dt(rho, self.step_size) + calc.div(rho * v, position)) ** 2).mean()
-
-    def StateConstraint(self, p: torch.Tensor, rho: torch.Tensor, N=3):
-        """
-        rho: mass density | torch.tensor | (batch_size, sequence_length)
-        p: pressure | torch.tensor | (batch_size, sequence_length)
-        """
-        rho = rho.unsqueeze(-1)
-        p = p.unsqueeze(-1)
-        gamma = (N + 2) / 2
-        return ((calc.dF_dt(p / (rho) ** gamma, self.step_size)) ** 2).mean()
-
-    def Ohm(self, E: torch.Tensor, v: torch.Tensor, B: torch.Tensor):
-        """
-        B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
-        E: electric field | torch.tensor | (batch_size, sequence_length, 3)
-        v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return ((E + torch.cross(v, B, dim=-1)) ** 2).mean()
-
-    def Induction(
-        self, B: torch.Tensor, v: torch.Tensor, r: torch.Tensor, edge_order=1
-    ):
-        """
-        B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
-        v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return (
-            (
-                calc.dF_dt(B, self.step_size, edge_order)
-                - calc.rot(torch.cross(v, B, dim=-1), r, edge_order)
+    class GaussLawMagnetismConstraint(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                labels = self.__class__.__name__,
+                factors = {
+                    self.__class__.__name__: factor
+                }
             )
-            ** 2
-        ).mean()
 
-    def MotionConstraint(self, B, J, r, edge_order=1):
-        """
-        J: current density | torch.tensor | (batch_size, sequence_length)
-        B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
-        """
-        return (
-            (
-                torch.cross(J, B, dim=-1)
-                - calc.conv_oper(B, B, r, edge_order) / mu_0
-                + calc.grad((torch.norm(B, 2, -1, True) ** 2) / (2 * mu_0))
+        def forward(self, B: torch.Tensor, r: torch.Tensor) -> Tensor:
+            """
+            B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
+            r: position of the spacecraft | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return calc.div(B, r, self.edge_order).mean()
+
+    class GaussLawElectrostaticConstraint(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                labels = self.__class__.__name__,
+                factors = {self.__class__.__name__: factor}
             )
-            ** 2
-        ).mean()
+        def forward(
+            self, E: torch.Tensor, sigma: float, r: torch.Tensor
+        ):
+            """
+            E: electric field | torch.tensor | (batch_size, sequence_length, 3)
+            sigma: charge density | torch.tensor | (batch_size, sequence_length)
+            r: position of the spacecraft | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return (calc.div(E, r, self.edge_order) - (sigma / epsilon_0)).mean()
 
-    def forward(
-        self,
-        r: torch.Tensor,
-        B: torch.Tensor,
-        E: torch.Tensor,
-        J: torch.Tensor,
-        p: torch.Tensor,
-        v_drift: torch.Tensor,
-        v: torch.Tensor,
-        sigma: torch.Tensor,
-        rho: torch.Tensor,
-        lambdas: list = [0.1 for _ in range(8)],
-    ) -> torch.Tensor:
-        return (
-            torch.tensor(lambdas)
-            * torch.tensor(
-                [
-                    self.GaussLawMagnetismConstraint(B, r),
-                    self.GaussLawElectrostaticConstraint(E, sigma, r),
-                    self.DriftVelocity(B, E, v_drift),
-                    self.ContinuityConstraint(rho, v),
-                    self.StateConstraint(p, rho),
-                    self.LorentzConstraint(E, v, B),
-                    self.AmpereFaradayConstraint(B, v, r),
-                    self.MotionConstraint(B, J, r),
-                ]
+    class DriftVelocity(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                self.__class__.__name__,
+                {self.__class__.__name__: factor}
             )
-            ** 2
-        ).sum()
+        def forward(self, B: torch.Tensor, E: torch.Tensor, v_drift: torch.Tensor) -> Tensor:
+            """
+            B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
+            E: electric field | torch.tensor | (batch_size, sequence_length, 3)
+            v_drift: drift velocity | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return (
+                (torch.cross(E, B, dim=-1) / torch.sum(B, dim=-1, keepdim=True)) - v_drift
+            ).mean()
 
+    class ContinuityConstraint(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                self.__class__.__name__,
+                {self.__class__.__name__: factor}
+            )
+        def forward(self, rho: torch.Tensor, v: torch.Tensor) -> Tensor:
+            """
+            rho: mass density | torch.tensor | (batch_size, sequence_length)
+            v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return ((calc.dF_dt(rho, self.step_size) + calc.div(rho * v, position)) ** 2).mean()
 
-"""
-LOSS FORWARD FUNCTIONS
-"""
+    class StateConstraint(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                self.__class__.__name__,
+                {self.__class__.__name__: factor}
+            )
+        def forward(self, p: torch.Tensor, rho: torch.Tensor, N=3) -> Tensor:
+            """
+            rho: mass density | torch.tensor | (batch_size, sequence_length)
+            p: pressure | torch.tensor | (batch_size, sequence_length)
+            """
+            rho = rho.unsqueeze(-1)
+            p = p.unsqueeze(-1)
+            gamma = (N + 2) / 2
+            return ((calc.dF_dt(p / (rho) ** gamma, self.step_size)) ** 2).mean()
 
-"""
-Priority Criterion
+    class Ohm(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                self.__class__.__name__,
+                {self.__class__.__name__: factor}
+            )
+        def forward(self, E: torch.Tensor, v: torch.Tensor, B: torch.Tensor) -> Tensor:
+            """
+            B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
+            E: electric field | torch.tensor | (batch_size, sequence_length, 3)
+            v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return ((E + torch.cross(v, B, dim=-1)) ** 2).mean()
 
-"""
+    class Induction(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                labels = self.__class__.__name__,
+                factors = {self.__class__.__name__: factor}
+            )
+        def forward(
+            self, B: torch.Tensor, v: torch.Tensor, r: torch.Tensor, edge_order=1
+        ):
+            """
+            B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
+            v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return (
+                (
+                    calc.dF_dt(B, self.step_size, edge_order)
+                    - calc.rot(torch.cross(v, B, dim=-1), r, edge_order)
+                )
+                ** 2
+            ).mean()
+
+    class MotionConstraint(LighTorchLoss):
+        def __init__(self, factor: float = 1.) -> None:
+            super().__init__(
+                self.__class__.__name__,
+                {self.__class__.__name__: factor}
+            )
+        def forward(self, B, J, r, edge_order=1) -> Tensor:
+            """
+            J: current density | torch.tensor | (batch_size, sequence_length)
+            B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
+            """
+            return (
+                (
+                    torch.cross(J, B, dim=-1)
+                    - calc.conv_oper(B, B, r, edge_order) / mu_0
+                    + calc.grad((torch.norm(B, 2, -1, True) ** 2) / (2 * mu_0))
+                )
+                ** 2
+            ).mean()
 
 
 def compute_weights(dataloader):
@@ -279,8 +296,8 @@ class FineTuningPriorityCriterion(LighTorchLoss):
         self.weights = compute_weights(dataloader)
 
     def forward(self, **kwargs) -> Tensor:
-        losses = self.base_criterion(batch['input'], batch['target'], reduction="none").mean(dim=(1, 2))
-        seq_dst, _ = torch.max(target, dim=1)
+        losses = self.base_criterion(kwargs['input'], kwargs['target'], reduction="none").mean(dim=(1, 2))
+        seq_dst, _ = torch.max(kwargs['target'], dim=1)
         return torch.mean(losses * self.weights[seq_dst])
 
 
@@ -331,3 +348,11 @@ class NoiseLoss:
         # (B,S,I) x (B,S,I) -> (B,1)
         return F.mse_loss(l1, l2, reduction="none").mean(dim=(1, 2))
 
+class MainCriterion(Loss):
+    def __init__(self, valid_criterions: List[str], factors: List[float]) -> None:
+        assert (len(valid_criterions) == len(factors)), "Must have the same number of criterions and factors"
+        self.base_criterion = IdealMHD() ## setup init parameters
+        self.valid_criterions: List[str] = valid_criterions
+        super().__init__(
+            *[getattr(self.base_criterion, name)(factor) for name, factor in zip(self.valid_criterions, factors)]
+        )

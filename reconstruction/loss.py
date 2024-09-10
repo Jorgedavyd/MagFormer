@@ -1,6 +1,18 @@
-from ..mhd_constraints import
-from lightorch.nn.criterions import Loss
+from ..mhd_constraints import MainCriterion
+from typing import List
 
-criterion = Loss(
+valid_criterions: List[str] = [
+    '',
+    '',
+]
 
+factors: List[float] = [
+    1.,
+    1.,
+]
+
+criterion = MainCriterion(
+    valid_criterions,
+    factors
 )
+

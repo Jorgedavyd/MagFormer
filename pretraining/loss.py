@@ -1,7 +1,18 @@
-from lightorch.nn.criterions import LagrangianFunctional
+from typing import List
+from ..mhd_constraints import MainCriterion
 
-class Loss(LagrangianFunctional):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__()
-    def forward(self, x: Tensor) -> Tensor:
-        return super().forward(x)
+valid_criterions: List[str] = [
+    '',
+    '',
+]
+
+factors: List[float] = [
+    1.,
+    1.,
+]
+
+criterion = MainCriterion(
+    valid_criterions,
+    factors
+)
+
