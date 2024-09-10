@@ -1,7 +1,6 @@
-from lightorch.nn.criterions import LagrangianFunctional, ELBO
+from ..mhd_constraints import
+from lightorch.nn.criterions import Loss
 
-class Loss(LagrangianFunctional):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__()
-    def forward(self, x: Tensor) -> Tensor:
-        return super().forward(x)
+criterion = Loss(
+
+)

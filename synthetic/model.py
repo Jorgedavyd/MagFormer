@@ -4,7 +4,7 @@ from lightorch.training.supervised import Module
 from typing import Dict
 
 input_size: int = 6
-out_size: int = 4 # Define
+out_size: int = 4
 
 class Model1(ResidualLSTM):
     def __init__(self, hidden_size: int, layers: int) -> None:

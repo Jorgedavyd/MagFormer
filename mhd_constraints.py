@@ -1,7 +1,8 @@
-# General utils
 import torch
 from datetime import timedelta
-from torch import nn
+from torch import nn, Tensor
+from torch.utils.data import DataLoader
+from lightorch.nn.criterions import LighTorchLoss
 from scipy.constants import mu_0, epsilon_0, c
 import torch.nn.functional as F
 from math import sqrt
@@ -165,7 +166,7 @@ class IdealMHD(nn.Module):
         rho: mass density | torch.tensor | (batch_size, sequence_length)
         v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
         """
-        return ((calc.dF_dt(rho) + calc.div(rho * v)) ** 2).mean()
+        return ((calc.dF_dt(rho, self.step_size) + calc.div(rho * v, position)) ** 2).mean()
 
     def StateConstraint(self, p: torch.Tensor, rho: torch.Tensor, N=3):
         """
@@ -262,18 +263,23 @@ def compute_weights(dataloader):
     return torch.softmax(1 / bounded)
 
 
-class FineTuningPriorityCriterion(nn.Module):
+class FineTuningPriorityCriterion(LighTorchLoss):
     def __init__(
         self,
-        dataloader,
+        dataloader: DataLoader,
+        factor: float
     ):
-        super().__init__()
+        super().__init__(
+            labels = self.__class__.__name__,
+            factors = {
+                self.__class__.__name__: factor
+            }
+        )
         self.base_criterion = F.cross_entropy
-        # Weight calc
         self.weights = compute_weights(dataloader)
 
-    def forward(self, pred, target) -> torch.Tensor:
-        losses = self.base_criterion(pred, target, reduction="none").mean(dim=(1, 2))
+    def forward(self, **kwargs) -> Tensor:
+        losses = self.base_criterion(batch['input'], batch['target'], reduction="none").mean(dim=(1, 2))
         seq_dst, _ = torch.max(target, dim=1)
         return torch.mean(losses * self.weights[seq_dst])
 
@@ -285,10 +291,8 @@ Based on datasets diff
 
 
 def weight_scaler(dataloader):
-    ## Computing weights
     batchwise_loss = []
     for batch in dataloader:
-        # output -> (B)
         batchwise_loss.append(
             F.mse_loss(batch["l1"], batch["l2"], reduction="none").mean(dim=(1, 2))
         )
@@ -298,27 +302,32 @@ def weight_scaler(dataloader):
     return lambda J: (J - loss_max) / (loss_max - loss_min)
 
 
-class ForcingCriterion(nn.Module):
+class ForcingCriterion(LighTorchLoss):
     def __init__(
         self,
-        dataloader,
+        dataloader: DataLoader,
+        factor: float
     ):
-        super().__init__()
+        super().__init__(
+            labels = self.__class__.__name__,
+            factors = {
+                self.__class__.__name__: factor
+            }
+        )
         self.base_criterion = F.mse_loss
         self.weight_scaler = weight_scaler(dataloader)
 
-    def forward(self, l1_out, l2_out, noise_loss: torch.Tensor) -> torch.Tensor:
+    def forward(self, **kwargs) -> Tensor:
+        noise_loss: Tensor = NoiseLoss.compute(kwargs['l1'], kwargs['l2'])
         # B,1
-        out = self.base_criterion(l1_out, l2_out, reduction="none").mean(dim=(1, 2))
+        out = self.base_criterion(kwargs['l1_out'], kwargs['l2_out'], reduction="none").mean(dim=(1, 2))
         # (B,1 * B,1).mean()
         return torch.mean(out * noise_loss.apply_(self.weight_scaler))
 
 
-class NoiseLoss(nn.Module):
+class NoiseLoss:
     @staticmethod
     def compute(l1, l2):
         # (B,S,I) x (B,S,I) -> (B,1)
         return F.mse_loss(l1, l2, reduction="none").mean(dim=(1, 2))
 
-
-#TODO  mhd -> lightorch
