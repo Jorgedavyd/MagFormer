@@ -63,6 +63,3 @@ def datetime_interval(
         date_list.append(current_date.strftime(output_format))
         current_date += step_size
     return date_list
-
-
-
