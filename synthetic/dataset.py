@@ -1,9 +1,9 @@
+from ..dataset import ACEDataset, DSCOVRDataset, DatasetLevel2, DatasetLevel3, DefaultDataModule, WINDDataset, SOHODataset
 from datetime import timedelta, datetime
 from date_prep import general_dates
-from ..dataset import ACEDataset, DSCOVRDataset, DatasetLevel2, DatasetLevel3, DefaultDataModule, WINDDataset, SOHODataset
+from typing import Tuple, List
 from torch import Tensor
 import torch
-from typing import Tuple, List
 """
 Dataset architecture
 

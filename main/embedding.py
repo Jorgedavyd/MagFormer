@@ -2,8 +2,6 @@ from lightorch.nn import DnPositionalEncoding, RotaryPositionalEncoding
 from torch import nn
 from datetime import timedelta
 
-# done
-# Joining the Derivative based positional encoding
 class JointPositionalEncoding(nn.Module):
     def __init__(self, d_model, seq_len, step_size: timedelta, degree: int, edge_order):
         super().__init__()

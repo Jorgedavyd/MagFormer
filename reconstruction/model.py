@@ -7,22 +7,9 @@ from lightorch.training.supervised import Module
 
 DecoderParams = Dict[str, int | float | List[int|float]]
 EncoderParams = Dict[str, int | float | List[int|float]]
-
-class M1(nn.Module):
-    def __init__(self,*args,**kwargs ) -> None:
+class Encoder(nn.Module):
+    def __init__() -> None:
         super().__init__()
-        self.res_lstm = ResidualLSTM(*args, **kwargs)
-    @torch.jit.script
-    def forward(self, x: Tensor) -> Tensor:
-        return self.res_lstm(x)
-
-class M2(nn.Module):
-    def __init__(self,*args,**kwargs ) -> None:
-        super().__init__()
-        self.res_lstm = ResidualGRU(*args, **kwargs)
-    @torch.jit.script
-    def forward(self, x: Tensor) -> Tensor:
-        return self.res_lstm(x)
 
 class Encoder(nn.Module):
     def __init__(self, encoderParams: EncoderParams) -> None:
@@ -45,8 +32,9 @@ class Decoder(nn.Sequential):
         return self.model(x)
 
 class VAE(nn.Module):
-    def __init__(self, encoderParams: EncoderParams, decoderParams: DecoderParams) -> None:
+    def __init__(self, encoderParams: EncoderParams, decoderParams: DecoderParams, p: float = 0.) -> None:
         super().__init__()
+        self.dropout = nn.Dropout(p)
         self.encoder = Encoder(encoderParams)
         self.decoder = Decoder(decoderParams)
 
@@ -68,6 +56,7 @@ class VAE(nn.Module):
 class Model(Module):
     def __init__(self, **hparams) -> None:
         super().__init__(**hparams)
+        self.model = VAE(**hparams)
 
     def forward(self, x: Tensor) -> Tuple[Tensor, ...]:
         return self.model(x)

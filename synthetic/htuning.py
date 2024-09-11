@@ -7,12 +7,17 @@ import optuna
 
 labels : List[str] | str = criterion().labels
 
-def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str]:
+def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str|List[str]|Dict[str, float|int]]:
     return dict(
-        lr = trial.suggest_float(1e-6, 1e-2, log = True),
-        weight_decay= trial.suggest_float(1e-6, 1e-2, log = True),
-        layers = trial.suggest_int(1, 5),
-        hidden_size = trial.suggest_int(10, 100),
+        optimizer = 'adam',
+        scheduler = 'onecycle',
+        triggers = [''],
+        optimizer_kwargs = dict(),
+        scheduler_kwargs = dict(),
+        lr = trial.suggest_float("lr", 1e-6, 1e-2, log = True),
+        weight_decay= trial.suggest_float("weight_decay", 1e-6, 1e-2, log = True),
+        layers = trial.suggest_int("layers", 1, 5),
+        hidden_size = trial.suggest_int("layers", 10, 100),
     )
 
 if __name__ == '__main__':

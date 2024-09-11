@@ -1,16 +1,32 @@
-from lightorch.nn import criterions
-from main.transformer import JointPositionalEncoding
+from lightorch.nn import SelfAttention, Transformer, TransformerCell
+from lightorch.training.supervised import Module
+from .embedding import JointPositionalEncoding
 from torch import nn, Tensor
-from ..pretraining import Main
-from lightorch.nn.transformer import CrossTransformer
+import torch
 
-#TODO: Define Magformer with cross transformer from lightorch
-class MagFormer(CrossTransformer):
-    def __init__(self, LASCO_SDO_model_path: str,  ) -> None:
-        super().__init__()
-        self.first_path = LASCO_SDO_model_path
-        self.first_model = Main(..., self.first_path)
+class MagFormer(Transformer):
+    def __init__(
+        self,
+        ## setup the parameters
+    ) -> None:
+        super().__init__(
+                positional_encoding = JointPositionalEncoding(),
+                encoder = TransformerCell(
+                    self_attention=SelfAttention(),
+                    ffn=FFN_SwiGLU(),
+                    prenorm=nn.RMSNorm()
+                ),
+                fc = nn.Linear(),
+                n_layers = 4,
+            )
 
-    def forward(self, L1_data: Tensor, LASCO: Tensor, SDO: Tensor) -> Tensor:
-        image_input = self.first_model(LASCO, SDO)
-        return out
+    def forward(self, vae_recons: Tensor, image_recons: Tensor) -> Tensor:
+        return super().forward(torch.cat([vae_recons, image_recons], dim = -2))
+
+class Model(Module):
+    def __init__(self, **hparams) -> None:
+        super().__init__(**hparams)
+        self.model: MagFormer = MagFormer(**hparams)
+
+    def forward(self, x: Tensor) -> Tensor:
+        return self.model(x)
