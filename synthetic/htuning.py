@@ -9,6 +9,7 @@ labels : List[str] | str = criterion().labels
 
 def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str|List[str]|Dict[str, float|int]]:
     return dict(
+        input_size = ,
         optimizer = 'adam',
         scheduler = 'onecycle',
         triggers = [''],
@@ -18,7 +19,6 @@ def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str|List[str]|Di
         weight_decay= trial.suggest_float("weight_decay", 1e-6, 1e-2, log = True),
         layers = trial.suggest_int("layers", 1, 5),
         hidden_size = trial.suggest_int("layers", 10, 100),
-        input_size =
     )
 
 if __name__ == '__main__':

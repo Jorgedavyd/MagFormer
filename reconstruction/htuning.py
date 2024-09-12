@@ -8,16 +8,28 @@ import optuna
 labels : List[str] | str = criterion().labels
 
 def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str|List[str]|Dict[str, float|int]]:
+    depth: int = trial.suggest_int("depth", 2, 4)
     return dict(
         optimizer = 'adam',
         scheduler = 'onecycle',
-        triggers = [''],
-        optimizer_kwargs = dict(),
-        scheduler_kwargs = dict(),
-        lr = trial.suggest_float("lr", 1e-6, 1e-2, log = True),
-        weight_decay= trial.suggest_float("weight_decay", 1e-6, 1e-2, log = True),
-        layers = trial.suggest_int("layers", 1, 5),
-        hidden_size = trial.suggest_int("layers", 10, 100),
+        triggers = dict(
+            encoder = dict(
+                    lr = trial.suggest_float("lr", 1e-6, 1e-2, log = True),
+                    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log = True),
+            ),
+            decoder = dict(
+                    lr = trial.suggest_float("lr", 1e-6, 1e-2, log = True),
+                    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log = True),
+            )
+        ),
+        channels = ## setup sequence length,
+        lambd = trial.suggest_int("lambd", 2, 4),
+        pooling_layers = [
+            trial.suggest_categorical(f"pooling_{idx}", [0, 1]) for idx in range(depth)
+        ]
+        architecture = [
+            trial.suggest_categorical(f"res_single_{idx}", [0, 1]) for idx in range(depth)
+        ]
     )
 
 if __name__ == '__main__':

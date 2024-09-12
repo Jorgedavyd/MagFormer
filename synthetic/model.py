@@ -49,6 +49,4 @@ class Model(Module):
         return dict(
             label = torch.stack(out, dim = -1),
             target = batch[1],
-
-            ## setup B,, and all of that stuff
         )

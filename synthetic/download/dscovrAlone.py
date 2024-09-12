@@ -1,5 +1,5 @@
 from date_prep import general_dates, merge_scrap_date_lists
-from starstream import WIND, SOHO, ACE
+from starstream import DSCOVR
 from starstream.utils import DataDownloading
 from typing import Tuple, List
 from datetime import datetime
@@ -11,9 +11,7 @@ if __name__ == '__main__':
     )
 
     DataDownloading(
-        [ACE.MAG(), ACE.SWEPAM(),
-         ACE.EPAM(), ACE.SIS(),
-         SOHO.CELIAS_SEM(), SOHO.CELIAS_PM(),
-         WIND.MAG(), WIND.TDP_PM()],
+        DSCOVR(),
         scrap_date_list
     )
+

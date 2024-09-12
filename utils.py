@@ -2,7 +2,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
 from collections.abc import Callable
 from torch import Tensor
-from typing import List, Union
+from typing import List, Union, Dict
 import pandas as pd
 import torch
 
