@@ -12,7 +12,7 @@ def objective(trial: optuna.trial.Trial) -> Dict[str, float|int|str|List[str]|Di
         input_size = ,
         optimizer = 'adam',
         scheduler = 'onecycle',
-        triggers = [''],
+        triggers = ['dropout', 'fc', 'model'],
         optimizer_kwargs = dict(),
         scheduler_kwargs = dict(),
         lr = trial.suggest_float("lr", 1e-6, 1e-2, log = True),

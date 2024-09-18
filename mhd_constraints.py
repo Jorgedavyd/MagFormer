@@ -351,7 +351,7 @@ class NoiseLoss:
 class MainCriterion(Loss):
     def __init__(self, valid_criterions: List[str], factors: List[float]) -> None:
         assert (len(valid_criterions) == len(factors)), "Must have the same number of criterions and factors"
-        self.base_criterion = IdealMHD() ## setup init parameters
+        self.base_criterion = IdealMHD()
         self.valid_criterions: List[str] = valid_criterions
         super().__init__(
             *[getattr(self.base_criterion, name)(factor) for name, factor in zip(self.valid_criterions, factors)]

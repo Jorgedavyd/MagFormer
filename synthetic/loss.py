@@ -11,6 +11,8 @@ valid_criterions: List[str] = [
 factors: List[float] = [
     1.,
     1.,
+    1.,
+    1.,
 ]
 
 criterion = MainCriterion(

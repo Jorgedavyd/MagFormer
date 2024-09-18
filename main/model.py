@@ -1,4 +1,4 @@
-from lightorch.nn import SelfAttention, Transformer, TransformerCell
+from lightorch.nn import SelfAttention, Transformer, TransformerCell, FFN_SwiGLU
 from lightorch.training.supervised import Module
 from .embedding import JointPositionalEncoding
 from torch import nn, Tensor

@@ -9,10 +9,14 @@ trainer:
 model:
   class_path: synthetic.model.Model
   dict_kwargs:
-    lr: 1e-2
-    weight_decay: 1e-2
+    model_type: LSTM
+    input_size:
     hidden_size: 8
-    layers: 4
+    out_size:
+    optimizer: adam
+    optimizer_kwargs:
+      lr: 1e-3
+      weight_decay: 1e-4
 
 data:
   class_path: synthetic.dataset.DataModule
