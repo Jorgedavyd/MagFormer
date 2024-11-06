@@ -5,4 +5,9 @@ J.~T. Gosling.
 \newblock {\em The Solar Wind}.
 \newblock Elsevier, 2007.
 
+\bibitem{DBLP:journals/corr/abs-2109-07143}
+Nils Wandel, Michael Weinmann, Michael Neidlin, and Reinhard Klein.
+\newblock Spline-pinn: Approaching pdes without data using fast, physics-informed hermite-spline cnns.
+\newblock {\em CoRR}, abs/2109.07143, 2021.
+
 \end{thebibliography}

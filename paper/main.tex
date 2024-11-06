@@ -22,18 +22,53 @@ This paper explores the use of Physics-Informed Neural Networks (PINNs) for solv
 \newpage
 
 \section{Introduction}
+The solar wind phenomena is a vastly known event that arises from ionized solar outbursts into the stellar medium, commonly stimulating planets' magnetosphere. \cite{Gosling2007} The first record of a related event dates from 1859, popularly named "The Carrington event" after the English astronomer Richard Carrington (1826, 1875), who settled the intuition upon solar flares and geomagnetic fluctuations. Individuals from all around the glove sighted the Northern Lights, subtle variations in atmosphere's hues' tones, caused by ionized particles flowing through the ionosphere.
+
 Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
+
 Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
 
+Traditional models and methodologies fail to account for the anysotropic nature of the Solar Wind. The Magnetohydrodynamics Model assumes a Boltzmann-Maxwellian distribution, doted with standard thermodynamical behavior. On the other hand, the Solar Wind is a collisionles plasma, precluding its inclusion solely within those boundaries. Thus, the present work emphasizes the usage of learnable neural operators engineered to empirically fit kinetic and dynamical behaviors.
 
-\section{Solar Wind}
-The solar wind phenomena is a vastly known event that arises from ionized solar outbursts into the stellar medium, commonly stimulating planets' magnetosphere. \cite{Gosling2007} The first record of a related event dates from 1859, popularly named "The Carrington event" after the English astronomer Richard Carrington (1826, 1875), who settled the intuition upon solar flares and geomagnetic fluctuations. Individuals from all around the glove sighted the Northern Lights, subtle variations in atmosphere's hues' tones, caused by the ionized particles flowing through the ionosphere.
+Moreover, kinetic frames based on Maxwellian electromagnetism tend to be computationally expensive for the microscopic and macroscopic frame:
+
+\begin{equation}
+    n_{\alpha}(r, t) \equiv
+\end{equation}
+
+Yet modern physics informed machine learning research schemes enable faster inference time and less computational load: embedding systems' equations within the loss function and constraining network's backbone based on empirical approaches.
+
+\section{Related Work}
 
 \section{Parker Neural Operator}
 
+\subsection{Parker's Solar Wind model}
+Parker's model of Solar wind establishes a radial outward propagation of the plasma through time:
 
-\section{Problem Formulation}
-The MHD equations consist of the following systems of equations:
+\subsection{Neural Operators}
+
+\subsection{Parker Kernel}
+
+\section{Hermite Splines}
+
+Implicit PINN research usually enriches datasets with high resolution simulation data. High resolution data plays an important role within the machine learning PDE solvers. Numerical integration methods' accuracy decays as the data resolution does so.
+Given the unfulfilled knowledge about solar wind dynamics and low resolution nature of the data, this work utilizes polynomial interpolation methods with empirical backup \cite{DBLP:journals/corr/abs-2109-07143} to convert the discrete problem into continuous.
+
+\subsection{Related Work}
+
+\section{Coronagraph Analysis}
+
+\subsection{Data}
+
+\subsection{Architecture}
+
+\section{Pipeline}
+
+\section{Results}
+
+\section{Discussion}
+
+\section{Conclusion}
 
 \subsection{Momentum Equation (Navier-Stokes)}
 The momentum equation for an incompressible, electrically conducting fluid is given by:
@@ -41,7 +76,6 @@ The momentum equation for an incompressible, electrically conducting fluid is gi
 \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla) \mathbf{u} = -\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{J} \times \mathbf{B},
 \end{equation}
 where \( \mathbf{u} \) is the velocity field, \( p \) is the pressure, \( \nu \) is the kinematic viscosity, \( \mathbf{J} \) is the current density, and \( \mathbf{B} \) is the magnetic field.
-
 
 \subsection{Induction Equation}
 The induction equation describes the evolution of the magnetic field \( \mathbf{B} \) in the presence of the velocity field \( \mathbf{u} \):
