@@ -50,6 +50,7 @@ class calc:
         dFz_dy = torch.gradient(
             F[:, :, 2], spacing=position[:, :, 1], dim=-1, edge_order=edge_order
         )
+
         dFy_dz = torch.gradient(
             F[:, :, 1], spacing=position[:, :, 2], dim=-1, edge_order=edge_order
         )
