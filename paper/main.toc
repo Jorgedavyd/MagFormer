@@ -1,15 +1,17 @@
 \contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
-\contentsline {section}{\numberline {2}Problem Formulation}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Momentum Equation (Navier-Stokes)}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Induction Equation}{3}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Constraints}{4}{subsection.2.3}%
-\contentsline {section}{\numberline {3}Physics-Informed Neural Network Kernel}{4}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Advection Term}{4}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Induction Term}{4}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Lorentz Force Term}{4}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Residuals and Loss Function}{5}{subsection.3.4}%
-\contentsline {section}{\numberline {4}Numerical Implementation and Results}{5}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Neural Network Architecture}{5}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Training Procedure}{5}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Results}{5}{subsection.4.3}%
-\contentsline {section}{\numberline {5}Conclusion}{5}{section.5}%
+\contentsline {section}{\numberline {2}Solar Wind}{3}{section.2}%
+\contentsline {section}{\numberline {3}Parker Neural Operator}{3}{section.3}%
+\contentsline {section}{\numberline {4}Problem Formulation}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Momentum Equation (Navier-Stokes)}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Induction Equation}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Constraints}{4}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Physics-Informed Neural Network Kernel}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Advection Term}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Induction Term}{5}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Lorentz Force Term}{5}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Residuals and Loss Function}{5}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Numerical Implementation and Results}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Neural Network Architecture}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Training Procedure}{6}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Results}{6}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Conclusion}{6}{section.7}%

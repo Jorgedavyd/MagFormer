@@ -21,11 +21,16 @@ This paper explores the use of Physics-Informed Neural Networks (PINNs) for solv
 \tableofcontents
 \newpage
 
-% Section 1: Introduction
 \section{Introduction}
 Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
-
 Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
+
+
+\section{Solar Wind}
+The solar wind phenomena is a vastly known event that arises from ionized solar outbursts into the stellar medium, commonly stimulating planets' magnetosphere. \cite{Gosling2007} The first record of a related event dates from 1859, popularly named "The Carrington event" after the English astronomer Richard Carrington (1826, 1875), who settled the intuition upon solar flares and geomagnetic fluctuations. Individuals from all around the glove sighted the Northern Lights, subtle variations in atmosphere's hues' tones, caused by the ionized particles flowing through the ionosphere.
+
+\section{Parker Neural Operator}
+
 
 \section{Problem Formulation}
 The MHD equations consist of the following systems of equations:
@@ -36,6 +41,7 @@ The momentum equation for an incompressible, electrically conducting fluid is gi
 \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla) \mathbf{u} = -\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{J} \times \mathbf{B},
 \end{equation}
 where \( \mathbf{u} \) is the velocity field, \( p \) is the pressure, \( \nu \) is the kinematic viscosity, \( \mathbf{J} \) is the current density, and \( \mathbf{B} \) is the magnetic field.
+
 
 \subsection{Induction Equation}
 The induction equation describes the evolution of the magnetic field \( \mathbf{B} \) in the presence of the velocity field \( \mathbf{u} \):
@@ -92,6 +98,10 @@ The neural network was able to approximate the solution to the MHD equations und
 
 \section{Conclusion}
 In this work, we have demonstrated the effectiveness of Physics-Informed Neural Networks for solving Magnetohydrodynamics PDEs. By embedding the governing physical equations directly into the loss function, we can efficiently train a neural network to approximate the solution of complex, non-linear systems. Future work will focus on improving the kernel design and extending the approach to more complicated MHD scenarios.
+
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}
 
