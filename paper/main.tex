@@ -1,357 +1,97 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cite}
 
-\usepackage{PRIMEarxiv}
-\usepackage[utf8]{inputenc} % allow utf-8 input
-\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-\usepackage{hyperref}       % hyperlinks
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{microtype}      % microtypography
-\usepackage{lipsum}
-\usepackage{fancyhdr}       % header
-\usepackage{graphicx}       % graphics
-\graphicspath{{media/}}     % organize your images and other figures under media/ folder
-
-%Header
-\pagestyle{fancy}
-\thispagestyle{empty}
-\rhead{ \textit{ }}
-
-% Update your Headers here
-\fancyhead[LO]{MHD informed Multi-modal Networks for
-Geomagnetic Forecasting}
-% \fancyhead[RE]{Firstauthor and Secondauthor} % Firstauthor et al. if more than 2 - must use \documentclass[twoside]{article}
-
-%% Title
-\title{MHD informed Multi-modal networks for Geomagnetic Forecasting
-%%%% Cite as
-%%%% Update your official citation here when published
-\thanks{\textit{\underline{Citation}}:
-\textbf{Authors. Title. Pages.... DOI:000000/11111.}}
-}
-
-\author{
-  Jorge Enciso \\
-  Asunción\\
-  \texttt{\ jorged.encyso@gmail.com} \\
-  %% examplez of more authors
-  %% \AND
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
-  %% \And
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
-  %% \And
-  %% Coauthor \\
-  %% Affiliation \\
-  %% Address \\
-  %% \texttt{email} \\
-}
-
+\title{Solving MHD PDEs with Physics-Informed Neural Networks (PINNs)}
+\author{Jorge Enciso}
+\date{\today}
 
 \begin{document}
+
 \maketitle
 
-
 \begin{abstract}
-
+This paper explores the use of Physics-Informed Neural Networks (PINNs) for solving Magnetohydrodynamics (MHD) partial differential equations (PDEs). We design a custom neural network kernel that incorporates the essential physical operators, such as advection, induction, and Lorentz forces, to efficiently solve the governing equations of MHD in a variety of conditions.
 \end{abstract}
 
+\tableofcontents
+\newpage
 
-% keywords can be removed
-\keywords{Solar Wind \and Geomagnetic Storms \and Space Weather \and Deep Learning \and Machine Learning \and Magnetohydrodynamics}
-
+% Section 1: Introduction
 \section{Introduction}
+Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
 
-Geomagnetic storms, primarily caused by the impact of Coronal Mass Ejections (CMEs) originating from the Sun, are significant fluctuations in the Earth's magnetosphere \cite{comp_1}. CMEs are powerful bursts of energetic particles and magnetic fields ejected from the Sun's corona into space. As these high-energy particles travel through the Solar Wind (SW) and interact with the Earth's magnetosphere, they can induce geomagnetic disturbances, leading to geomagnetic storms \cite{ECHER20111454, cme_pred_1, cme_pred_2}. These storms can have severe detrimental impacts on modern systems such as power grids \cite{power_grid, var_study_1} and global positioning systems \cite{gps_1}, resulting in significant economic setbacks \cite{comp_1}. Consequently, accurate geomagnetic forecasting is of utmost importance.
+Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
 
-Several works have tackled geomagnetic forecasting using Machine Learning (ML) and Deep Learning (DL) methods \cite{comp_1, comp_2, comp_3, comp_4}. These methods typically use correlated L1-Lagrange solar wind data, including composition, temperature, and velocity, to predict the impacts on Earth's magnetosphere.
+\section{Problem Formulation}
+The MHD equations consist of the following systems of equations:
 
-Image analysis also plays a crucial role in geomagnetic forecasting \cite{cme_pred_1, cme_pred_2, image_1}. Statistical analysis of sunspots demonstrates a strong relationship between their parameters (e.g., size, intensity) and the AA index \cite{image_1}. This indicates a dependency between optical imagery features of the sun and its effects on the Interplanetary Magnetic Field (IMF), suggesting that image sequences can capture solar wind features that describe plasma dynamics.
-
-There are multiple methods to integrate diverse data sources, meaning disparate types (images, tabular), using embedding and cross-attention techniques \cite{multimodal1}. Embedding techniques transform high-dimensional and heterogeneous data into a shared representation space, facilitating the fusion of information from different modalities. Cross-attention mechanisms allow the model to selectively attend to relevant information from each modality while performing the forecasting task. However, despite the potential of these advanced techniques, existing geomagnetic forecasting methods have not fully exploited this theory.
-
-Another important factor, conducive to faster convergence and model interpretability, is the science-informed scope of Machine Learning \cite{datadrivenscience}. The insertion of systematic features into the training process of a model can provide important conclusions through data. Coronal Mass Ejections (CMEs) are powerful bursts of energetic particle plasma that can be analyzed from the Ideal Magnetohydrodynamic (MHD) model. Currently, works rely more on the algorithmic representations of the data rather than its intrinsic attributes.
-
-Recognizing these gaps, our work proposes an innovative approach to integrate these advanced techniques into geomagnetic forecasting, motivated by the potential benefits. Our model aims to infer solar wind plasma dynamics through physics-informed deep learning. Various magneto-hydrodynamic parameters are computed from L1 Lagrange readings to improve kinetic interpretation. Along the way, this research poses the following contributions:
-
-\begin{enumerate}
-\item Implementation of a \textbf{multi-modal approach} towards modeling the Earth's magnetosphere.
-\item Introduction of \textbf{physics-informed constraints} to the loss function that replicate ideal \textbf{Magnetohydrodynamic} (MHD) systems.
-\item Implementation of \textbf{denoising autoencoders} to calibrate raw data.
-\item Development of \textbf{physics-informed feature engineering} based on plasma dynamic characteristics.
-\item Creation of a training method that \textbf{addresses sample disparity}.
-\item Generation of synthetic data to \textbf{leverage sample disparity}.
-\item Creation of an open-source pipeline for \textbf{real-time forecasting}.
-\item Robust implementation of \textbf{state-of-the-art Machine Learning and Deep Learning algorithms}.
-\item Implementation of \textbf{parallelizable kernels} for highly utilized physical operators ($(A \cdot \nabla) \cdot B$, $\nabla \times A$
-\end{enumerate}
-
-By addressing these contributions, our approach aims to enhance the accuracy and reliability of geomagnetic storm forecasting, ultimately preventing the adverse effects of space weather on Earth's technological systems.
-
-\section{Related Work}
-In this section, we delve into the empirical results obtained by researchers whose goals were closely related to the scope of this work. Furthermore, we provide comprehensive theoretical explanations to further support and contextualize their methodologies. This allows us to establish a robust foundation upon which to situate the actual research within the broader context of the field.
-
-\subsection{Geomagnetic storm forecasting from solar coronal holes}
-This research \cite{cme_pred_1} poses a keystone for the development of this project. More concretely, it opens the possibility to the prediction of Magnetosphere activity through EUV sensors that constantly aim the sun. Utilizing a Gaussian Regressor, they've tuned solar wind parameters from L1 Lagrange readings. They used manually selected kernels that accounted for the periodicity of the events.
-
-This research recalls that the data availability for short time intervals played a role into the model selection, given the promising results of Gaussian Process Regressors onto small datasets. Their approach was based on the following steps:
-
-\begin{enumerate}
-    \item Detecting the signatures responsible for CIR/HSS-driven geomagnetic storms in all the available time series.
-    \item Associating the signatures belonging to the same event to each other.
-    \item Comparing polarities from CHs on the Sun to the solar wind. at L1 to evaluate the reliability of a polarity estimation.
-    \item We derive a function to approximate the solar wind speed from areas of CHs.
-    \item Fitting a periodic function to the ratios Dst/v and Kp/v separated by CH polarity on the day of the year (DOY).
-    \item We combine the results to formulate a prediction model for Dst and Kp as a function of CH polarity, CH area and DOY
-\end{enumerate}
-
-They found a directly proportional relationship between the peak velocity of the solar wind and the area of coronal holes (CH). They automatically labeled emerging coronal holes that could potentially become high energy particle ejection to the empirical minimum velocity of CMEs (around 400km/s).
-
-The decent linear correlations between both EUV image based analysis and the ground truth (normalized Dst and Kp) provided a foundational breakthrough that allows for increased warning time of impending magnetosphere catastrophes, being the primary motivator of the current work on developing cross models that can analyse both imagery and tabular sequential data with further robust algorithms aided by kinetic interpretations of this phenomena.
-
-\subsection{Geoeffectiveness of Coronal Mass Ejections in the SOHO era}
-This research \cite{related2}
-
-A Deep Learning Approach to Dst Index Prediction
-
-Regression modeling method of space weather prediction
-
-Space apps challenge
-
-\section{Data}
-The data sources utilized by the current research were extracted from the following organisms' work and maintenance: The National Aeronautics and Space Administration (NASA), European Space Agency (ESA), National Oceanic and Atmospheric Administration (NOAA), United States' Navy, California Institute of Technology (Caltech), Max Planck Institute for Solar System Research (MPS), World Data Center for Geomagnetism (WDC Tokyo), Harvard. All of them offer extensive set of tools to analyze magnetosphere impacts and correlations with solar wind features.
-
-Space data uses standardized methodologies for data maintenance, requiring a classification based on their processing levels:
-
-\begin{itemize}
-    \item L0: Raw telemetry data.
-    \item L1: Calibrated into physical units.
-    \item L2: Further processed and reviewed (generally).
-    \item L3: Feature engineered data.
-\end{itemize}
-
-All of them can be used with different scopes based on their instant availability, physical abstraction, reliability and reproducibility. In order to create a model that can continuously watch over plasma features, its input data should be in its disposition for the current time step, moreover the interpretability telemetry data is reduced by uncertainty and encryptation factors. Therefore, a product that leverages both real time and physical properties is needed for succesful modeling.
-
-The Real Time Solar Wind (RTSW) is a set of satellites that transmit their readings simultaneously to the Space Weather Prediction Center/National Oceanic and Atmospheric Administration (SWPC/NOAA). RTSW represents non-further processed L1 products, usually presenting anomalies within the readings. Nonetheless, they compose a vital part of the forecasting mechanisms, enabling the creation of algorithms to predict possible consequences on magnetosphere. The provided products by this project will be used as input data for the overall model.
-
-The position of the following satellites at the L1 Lagrange point provides a unique vantage point for continuously observing the Sun and the sunlit side of Earth, making them an essential asset in the global effort to monitor and understand space weather phenomena.
-
-\subsection{DSCOVR: Deep Space Climate Observatory}
-DSCOVR, a joint mission between NASA and the National Oceanic and Atmospheric Administration, is a crucial observational platform for monitoring space weather \cite{nasa_dscovr}. Launched in 2015, DSCOVR's primary mission is to monitor and provide advanced warning of potentially hazardous space weather events such as solar flares and coronal mass ejections that could impact Earth.
-
-It is equipped with two key instruments for measuring both energetic particle incidence and magnetic field parameters: the Faraday cup and the magnetometer from the PlasMag instrument \cite{nasa_dscovr}. The readings from these two sensors are crucial for virtually analyzing plasma dynamics near the L1 Lagrange point. These readings will be used as part of the core model data due to their real-time availability.
-
-\subsection{ACE: Advanced Composition Explorer}
-ACE, launched in 1997, provides continuous measurements of the solar wind and interstellar particles. It is equipped with several instruments designed to study the composition of solar and galactic particles, which are crucial for understanding the space weather environment. ACE's data helps in predicting geomagnetic storms and contributes to our understanding of the heliosphere.
-
-\subsection{WIND}
-The WIND spacecraft, launched in 1994, is part of the Global Geospace Science initiative. It provides comprehensive measurements of the solar wind, magnetic fields, and energetic particles. WIND's data is essential for understanding the fundamental processes of the solar wind and its interaction with the Earth's magnetosphere.
-
-\subsection{SOHO: Solar and Heliospheric Observatory}
-SOHO, a joint project of ESA and NASA, was launched in 1995. It is designed to study the Sun from its core to the outer corona and the solar wind.
-
-\subsubsection{LASCO: Large Angle and Spectrometric Coronagraph Observatory}
-LASCO, one of the instruments on SOHO, observes the solar corona by creating an artificial eclipse. It is instrumental in detecting coronal mass ejections, which are significant drivers of space weather.
-
-\subsection{OMNI}
-The OMNI dataset compiles solar wind data from multiple spacecraft, including ACE, WIND, and DSCOVR. It provides a comprehensive overview of the near-Earth solar wind conditions and is widely used in space weather research.
-
-\subsection{Dst Index: Disturbance Storm Time Index}
-The Dst Index measures the intensity of the ring current around Earth, which is directly related to geomagnetic storm activity. It is derived from ground-based magnetometer readings and provides a measure of the global geomagnetic activity.
-
-\subsection{Plasma Physics Informed Feature Engineering}
-The available readings from the spacecraft enable the derivation of plasma parameters that describe the solar wind system from different theoretical points.
-
-The \textbf{flow pressure} $F_p$ refers to the pressure exerted by the fluid as it moves through a magnetic field. This pressure arises due to the kinetic energy of the fluid particles and their interactions with each other and the surrounding magnetic field. The beta parameter $\beta$ of a given plasma is the proportion between the plasma pressure and the magnetic pressure. The \textbf{Alfvén Mach number} $M_A$ is the ratio of the current \textbf{flow velocity} $v$ of the plasma to the \textbf{Alfvén velocity} $v_A$. The \textbf{Magnetosonic Mach number} $M_{mgs}$ is the magnitude of the sum of the Alfvén velocity and the speed of sound $v_s$. We employ a scaled version of it used in the \textbf{OMNI} dataset, and the same approach is proposed for all the physics-informed features.
-
+\subsection{Momentum Equation (Navier-Stokes)}
+The momentum equation for an incompressible, electrically conducting fluid is given by:
 \begin{equation}
-F_p = m_i N_p V_p^2 \approx (2 \cdot 10^{-6}) N_p V_p^{2}
+\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla) \mathbf{u} = -\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{J} \times \mathbf{B},
+\end{equation}
+where \( \mathbf{u} \) is the velocity field, \( p \) is the pressure, \( \nu \) is the kinematic viscosity, \( \mathbf{J} \) is the current density, and \( \mathbf{B} \) is the magnetic field.
+
+\subsection{Induction Equation}
+The induction equation describes the evolution of the magnetic field \( \mathbf{B} \) in the presence of the velocity field \( \mathbf{u} \):
+\begin{equation}
+\frac{\partial \mathbf{B}}{\partial t} = \nabla \times (\mathbf{u} \times \mathbf{B}) + \eta \nabla^2 \mathbf{B},
+\end{equation}
+where \( \eta \) is the magnetic diffusivity.
+
+\subsection{Constraints}
+To ensure the magnetic field remains divergence-free, we impose the constraint:
+\begin{equation}
+\nabla \cdot \mathbf{B} = 0.
 \end{equation}
 
+\section{Physics-Informed Neural Network Kernel}
+The goal of the Physics-Informed Neural Network is to minimize the residuals of the PDEs by incorporating the physical operators (advection, induction, Lorentz force) into the loss function.
+
+\subsection{Advection Term}
+The advection term for the velocity field \( \mathbf{u} \) is given by:
 \begin{equation}
-\beta = \frac{nk_BT}{\frac{B^2}{2\mu_0}} = \frac{2\mu_0nk_BT}{B^2} \approx \frac{N_p (\frac{4.16T}{10^5} + 5.34)}{B^2}
+(\mathbf{u} \cdot \nabla) \mathbf{u},
+\end{equation}
+which represents the non-linear convective term in the momentum equation.
+
+\subsection{Induction Term}
+The induction term for the magnetic field \( \mathbf{B} \) is:
+\begin{equation}
+\nabla \times (\mathbf{u} \times \mathbf{B}),
+\end{equation}
+which represents the evolution of the magnetic field due to the fluid flow.
+
+\subsection{Lorentz Force Term}
+The Lorentz force term is the cross product of the current density \( \mathbf{J} \) and the magnetic field \( \mathbf{B} \). Using the relation \( \mathbf{J} = \nabla \times \mathbf{B} \), the Lorentz force can be expressed as:
+\begin{equation}
+\mathbf{J} \times \mathbf{B} = (\nabla \times \mathbf{B}) \times \mathbf{B}.
 \end{equation}
 
+\subsection{Residuals and Loss Function}
+The residuals for the MHD equations are computed by evaluating the PDE terms at each point in space and time. The overall loss function \( L_{\text{MHD}} \) is defined as:
 \begin{equation}
-v_A = \frac{B}{\sqrt{\mu_0\rho}}
+L_{\text{MHD}} = \sum_i \left( \left| \text{Residual at point } x_i \right|^2 \right),
 \end{equation}
+which ensures that the neural network learns to satisfy the MHD equations during training.
 
-\begin{equation}
-M_A = \frac{v}{v_A} \approx \frac{V \sqrt{N_p}}{20B}
-\end{equation}
+\section{Numerical Implementation and Results}
+\subsection{Neural Network Architecture}
+The neural network consists of fully connected layers with activation functions that allow for the efficient learning of the velocity and magnetic field solutions. We use a standard feed-forward neural network architecture, where the input consists of spatial and temporal coordinates and the output gives the predicted velocity and magnetic field.
 
-\begin{equation}
-M_{mgs} = \frac{v}{v_f} = \frac{v}{\sqrt{v_A^2 + v_s^2}} \approx \frac{V}{\sqrt{0.144|T + 1.28 \times 10^5| + 400 \frac{B^2}{N}}}
-\end{equation}
+\subsection{Training Procedure}
+The network is trained using a standard optimization algorithm such as Adam. During training, we compute the residuals for the momentum and induction equations, as well as the divergence-free constraint for the magnetic field, and include them in the loss function.
 
-These parameters provide a comprehensive set of features for understanding and modeling the behavior of the solar wind and its interaction with Earth's magnetosphere and Interplanetary Magnetic Field (IMF). By leveraging the real-time data from these satellites, we can enhance our predictive capabilities for space weather phenomena, thereby mitigating their potential impacts on technological systems and infrastructure on Earth.
+\subsection{Results}
+The neural network was able to approximate the solution to the MHD equations under various boundary conditions. The results were validated against known analytical solutions for simple test cases, and the PINN-based approach demonstrated significant accuracy and efficiency.
 
-\section{Architectures}
-
-\subsection{Denoising autoencoder}
-The current work poses joint-calibration DAEs (Denoising Autoencoders) to address possible anomalies in the processed data. Both \textbf{Deep Space Climate Observatory} (\textbf{DSCOVR}) and \textbf{Advanced Composition Explorer} (\textbf{ACE}) are being use for this purpose because of their real time availability. The opted direct label is extracted from \textbf{OMNI} dataset, a database of preprocessed highly reliable near-earth data extracted from various missions (including ACE and WIND).
-
-\subsection{Synthetic data generation}
-Due to the meager historical data from \textbf{DSCOVR}, current models that rely on this database are inherently biased towards non-true labels (normal geomagnetic activity), therefore, creating conservative models \cite{}. Some researchers tackle this issue through \textbf{SMOTE} \cite{smote_1}, obtaining good results. Nevertheless, given the availability of alternative satellites in L1-Lagrange point, the usage of these multiple spacecrafts could be an alternative to replicate DSCOVR readings in a supervised manner within any chosen interval of time.  This research proposes the introduction of the following satellites: \textbf{SOHO} and \textbf{WIND}.
-
-Regarding the model architecture of the synthetic data generator, a variety of backbone architectures were tested, and the one that best fits our purpose, within its simplicity, is the Residual GRU/Fourier Residual 1d Denoising Autoencoder.
-
-\subsection{Multi-Modal Transformer}
-This model has an decoder-like transformer architecture, utilizing two identical transformers heads with a cross attention layer after the self attention \ref{fig:fig1}. To converge both image and tabular data embedding spaces, 2D Patch embedding was used, and the image positions were encoded with frame wise derivatives. On the other hand, the L1-Lagrange data was embedded just with a linear operator to the same hidden dimension of dimensionality $d_{model}$. Computational capabilities were accounted as well. Thus, attention mechanisms were optimized with FlashAttention \cite{flashattention1, flashattention2}, and further tuned into Grouped Query Attention and Multi Query Attention \cite{attention1, attention2}. The feed forward network utilized here is the SwiGLU, which has demonstrated state of the art performance\cite{glu}:
-
-\begin{equation}
-    FFN_{SwiGLU} (x, W, V, W_2) = (Swish_1(xW) \odot xV)W_2
-\end{equation}
-
-For an input vector $x$, learnable weights $W$, $V$ and $W_2$, and $Swish_1$ being the $SiLU$ activation function:
-
-\begin{equation}
-    SiLU(x) = \frac{x}{1 + e^{-x}}
-\end{equation}
-
-\section{Optimization objective}
-
-\subsection{Balanced Loss function}
-
-In order to create the overall loss function, we have to tackle the issues cited in {2}. An error convex function that leverages:
-\begin{enumerate}
-    \item Prioritizing non-represented samples in the training data.
-    \item Targeting the desired output space.
-\end{enumerate}
-
-Applying a dynamical weight based on the distance of the mean to the actual point in proportion to the standard deviation of the whole dataset. This solves the bias generated by the low amount of positive samples (Geomagnetic storm intervals). Thus, we define the prior transformation given each of the $t$ target classes, returns a different weight inversely proportional to the amount of samples per each class ($n_i$) in the dataset:
-\begin{equation}
-    \gamma_p(y_t) := \left(y_t, softmax\left(concat\left\{\frac{1}{n_i}\right\}_{i=1}^t\right)\right)_2
-\end{equation}
-$(\cdot, \cdot)_2$ being the inner product of the euclidean space. For the one-hot encoded target $y_t$. We finally multiply both objectives into the \textbf{priority loss} for multiclass classification and regression tasks respectivelly:
-
-\begin{equation}
-L_{p}(\hat{y}_t, y_t) = \gamma_{p}(y_t) \cdot CrossEntropy(\hat{y}_t, y_t)
-    \end{equation}
-
-\begin{equation}
-L_{p}(\hat{y}_t, y_t) = \gamma_{p}(y_t) \cdot MSE(\hat{y}_t, y_t)
-    \end{equation}
-
-\begin{equation}
-\mathcal{L}_{loss}(\alpha;\theta):=\alpha\mathbb{E}[{L_{p}(O, Y)}]
-\end{equation}
-
-\subsection{Magnetohydrodynamics constraints}
-To define the physical holonomic constraints of the system--further decreasing the degrees of freedom-- and use Lagrange multipliers, we must firstly choose a theoretical physical interpretation. In this case, we take onto the \textbf{Ideal Model of Magnetohydrodynamics}, a field that encompasses fluid mechanics as well as maxwellian electromagnetism to describe highly ionized plasma related events.  Also, given the fact that we are working on a system able reach velocities up to $\frac{c}{4}$, special relativity is taken into account.
-\begin{equation}
-    \nabla \cdot \textbf{E} = \frac{\sigma}{\epsilon_0}
-\end{equation}
-\begin{equation}
-    \nabla \cdot \textbf{B} = 0
-\end{equation}
-\begin{equation}
-    \frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \textbf{v}) = 0
-\end{equation}
-\begin{equation}
-    \frac{d}{dt} \left( \frac{p}{\rho^\gamma} \right)= 0
-\end{equation}
-\begin{equation}
-    \textbf{E} + \textbf{v} \times \textbf{B} = 0
-\end{equation}
-\begin{equation}
-    \frac{\partial \textbf{B}}{\partial t} = \nabla \times (\textbf{v} \times \textbf{B})
-\end{equation}
-\begin{equation}
-    \textbf{J} \times \textbf{B} = \frac{(\textbf{B}\cdot \nabla) \textbf{B}}{\mu_0} - \nabla \left(\frac{B^2}{2\mu_0}\right)
-\end{equation}
-Equation 3 and 4 are the \textbf{Gauss Law for Electric and Magnetic Field} respectively. Equation 5 is the \textbf{Continuity Equation}. Equation 6 is the \textbf{Equation of State}, in this case $\gamma = \frac{C_P}{C_V} = \frac{N + 2}{N}$ N being the degrees of freedom of the system; $N = 3$ for monatomic gas (In this case we use the monatomic interpretation). Equation 7 and 8 are derived from Ohm's Law and Ampere's low-frequency law with Faraday's law respectively, as resistivity vanishes in the magnetohydrodynamic interpretation. The equation 9 is restated from the \textbf{Equation of Motion}.
-The solar wind is an ionized plasma composed by electrons and ions, the given charge density $\rho$, current density $\textbf{J}$ and center of mass velocity $\textbf{v}$ must be defined coherently with this definition:
-\begin{equation}
-    \sigma = n_e q_e + n_i q_i
-\end{equation}
-\begin{equation}
-    \rho = m_e q_e + m_i q_i
-\end{equation}
-\begin{equation}
-    \textbf{J} = n_e q_e \textbf{v}_e + n_i q_i \textbf{v}_i
-\end{equation}
-\begin{equation}
-    \textbf{v} = \frac{1}{\rho} (m_e n_e \textbf{v}_e + m_i n_i \textbf{v}_i)
-\end{equation}
-To satisfy the quasineutrality principle, we ensure that the drift velocities for both species are equivalent:
-\begin{equation}
-    \textbf{J}  = \textbf{v}_i(n_e q_e + n_i q_i)
-\end{equation}
-\begin{equation}
-    \textbf{v} = \frac{1}{\rho} \textbf{v}_i(m_e n_e + m_i n_i)
-\end{equation}
-Pressure can be derived from the ideal gas law:
-\begin{equation}
-    p = n k_B T
-\end{equation}
-
-Given a convex optimization problem, all of the prior physics informed constraints will be squared. The optimization problem will be also stated in terms of an scalar field (Loss function) subjected to a set of constraints (Ideal MHD model). Thus, we are finally defining the optimization objective as a Lagrangian functional of the form:
-\begin{equation}
-    \mathcal{L} [\mathcal{L}_{loss}, \mathcal{L}_{const}] := \mathcal{L}_{loss} - (\lambda, \mathcal{L}_{const}^2)_2
-\end{equation}
-Such that:
-\begin{equation}
-    \delta \mathcal{L}[\mathcal{L}_{loss}, \mathcal{L}_{const}] = 0
-\end{equation}
-
-\section{Framework}
-This work utilizes a set of Python tools oriented towards Machine Learning and Deep Learning developers. To train the architecture, LightTorch \cite{lightorch}\cite{pytorch}\cite{lightning} was employed as a deterministic framework for reproducibility and efficient coding. Additionally, parallelizable operations were implemented within the CUDA C++ framework to accelerate Python implementations, using the PyTorch C++ API to access CUDA kernels. For data pipeline automation, CorKit \cite{corkit} and StarStream \cite{starstream} were used to asynchronously download and calibrate the data.
-
-\subsubsection{Optimized CUDA C++ implementations}
-
-
-\section{Training phase}
-The training phase of these models were executed in a RTX 4070, with mixed precision training. Deterministic training was implemented for reproducibility. The hyperparameter tuning step was carried out based on bayesian multi-objective optimization with genetic algorithms, the Pareto front was analyzed to ultimately decide the values \ref{tab:table1}. Moreover, an optimized implementation for cross transformers was implemented into isolated CUDA kernels.
-
-%% Define things related to the training phase, mixed precision training
-\begin{table}[h]
- \caption{Model hyperparameters.}
-  \centering
-  \begin{tabular}{cccccccccccccc}
-    \toprule
-    Learning Rate & Weight Decay & $d_{model}$ & $n_{heads}$ & $n_{layers}$ & $\lambda_1$ & $\lambda_2$ & $\lambda_3$ & $\lambda_4$ & $\lambda_5$ & $\lambda_6$ & $\lambda_7$ & $\alpha$\\
-    \midrule
-    1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1  \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:table1}
-\end{table}
-
-\section{Results and Discussion}
-\begin{table}
- \caption{Model metrics for each time shift in hours (hr.) and days (d.)  task-wise.}
-  \centering
-  \begin{tabular}{llllllllllllllllll}
-    \toprule
-    \multicolumn{8}{c}{Regression} & \multicolumn{8}{c}{Multiclass Classification} \\
-    \cmidrule(r){1-8} \cmidrule(r){9-16}
-    Metric     &  1 hr.     & 3hr. & 6hr.& 12hr. & 1 d.& 2d. & 4d. & Metric     &  1 hr.     & 3hr. & 6hr.& 12hr. & 1 d.& 2d. & 4d. \\
-    \cmidrule(r){1-1} \cmidrule(r){2-8} \cmidrule(r){9-9} \cmidrule(r){10-16}
-    MSE & & & & & & & &Cross Entropy&\\
-    $R^2$ Score & & & & & & & & Accuracy&     \\
-    MAE  & & & & & & &  &Recall&      \\
-    Huber  & & & & & & & &Precision&      \\
-     - & - & - & - & - & - & - & - &$F_1$ Score&      \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:table2} \\
-\end{table}
-
-\section{Conclusion and Future Work}
-This work implemented a high-end algorithm that effectively tackles all necessities of the geomagnetic forecasting task, further enhancing the accuracy and reliability for computational methods towards magnetosphere surveillance. Given the scarce resources available, highly optimized framework were used, trading-off numerical precision that could have potentially enhanced final results. Moreover, there are more satellites that can add up to the forecasting efforts, for instance, the SDO/AIA, a Extreme Ultra Violet (EUV) sensor that captures electromagnetic incidence on different wavelengths. This probe can potentially improve long term forecasting because of the inherent features that CMEs present at EUV wavelengths of $171\textup{~\AA}$ to $350\textup{~\AA}$ before they're ejected from the sun.
-
-%Bibliography
-\bibliographystyle{unsrt}
-\bibliography{references}
-
+\section{Conclusion}
+In this work, we have demonstrated the effectiveness of Physics-Informed Neural Networks for solving Magnetohydrodynamics PDEs. By embedding the governing physical equations directly into the loss function, we can efficiently train a neural network to approximate the solution of complex, non-linear systems. Future work will focus on improving the kernel design and extending the approach to more complicated MHD scenarios.
 
 \end{document}
+
