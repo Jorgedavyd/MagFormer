@@ -15,30 +15,47 @@
 \maketitle
 
 \begin{abstract}
-This paper explores the use of Physics-Informed Neural Networks (PINNs) for solving Magnetohydrodynamics (MHD) partial differential equations (PDEs). We design a custom neural network kernel that incorporates the essential physical operators, such as advection, induction, and Lorentz forces, to efficiently solve the governing equations of MHD in a variety of conditions.
+    %%TODO
 \end{abstract}
 
 \tableofcontents
 \newpage
 
 \section{Introduction}
+
 The solar wind phenomena is a vastly known event that arises from ionized solar outbursts into the stellar medium, commonly stimulating planets' magnetosphere. \cite{Gosling2007} The first record of a related event dates from 1859, popularly named "The Carrington event" after the English astronomer Richard Carrington (1826, 1875), who settled the intuition upon solar flares and geomagnetic fluctuations. Individuals from all around the glove sighted the Northern Lights, subtle variations in atmosphere's hues' tones, caused by ionized particles flowing through the ionosphere.
 
-Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
+Several attempts to model Solar Wind's dynamics can be pinpointed empirically: analytical methods \cite{}, numerical modelling \cite{2006LNCS.3732..554E, 10.3389/fspas.2023.1105797,10.1093/mnras/staa3533}, and machine learning approaches \cite{comp_1, comp_2, comp_3}. All of them with different purposes.
 
-Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
-
-Traditional models and methodologies fail to account for the anysotropic nature of the Solar Wind. The Magnetohydrodynamics Model assumes a Boltzmann-Maxwellian distribution, doted with standard thermodynamical behavior. On the other hand, the Solar Wind is a collisionles plasma, precluding its inclusion solely within those boundaries. Thus, the present work emphasizes the usage of learnable neural operators engineered to empirically fit kinetic and dynamical behaviors.
+Traditional models and methodologies fail to account for the anysotropic nature of the Solar Wind. The Magnetohydrodynamics Model assumes a Boltzmann-Maxwellian distribution, doted with standard thermodynamical behavior. On the other hand, the Solar Wind is a collisionles plasma, precluding its inclusion solely within those boundaries. Thus, the present work emphasizes the usage of learnable neural operators engineered to empirically fit kinetic and dynamical descriptions.
 
 Moreover, kinetic frames based on Maxwellian electromagnetism tend to be computationally expensive for the microscopic and macroscopic frame:
 
 \begin{equation}
-    n_{\alpha}(r, t) \equiv
+    n_{\alpha} (r, t) := \int f_{\alpha}(r, v, t) d^3v
 \end{equation}
+
+\begin{equation}
+    \tau(r, t) := \sum q_{\alpha} n_{\alpha}
+\end{equation}
+
+\begin{equation}
+    u_{\alpha} (r, t) := \frac{1}{n_{\alpha}(r, t)} \int v f_{\alpha}(r, v, t) d^3v
+\end{equation}
+
+\begin{equation}
+    j(r, t) := \sum q_{\alpha} n_{\alpha} u_{\alpha}
+\end{equation}
+
+where $n_{\alpha}$ is the particle density, $u_{\alpha}$ the particle's drift velocity, $\tau(r, t)$ is the charge density, $j(r, t)$ is the current density, and $f_{\alpha}(r, v, t)$ is the Boltzmann's density function.
 
 Yet modern physics informed machine learning research schemes enable faster inference time and less computational load: embedding systems' equations within the loss function and constraining network's backbone based on empirical approaches.
 
 \section{Related Work}
+Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
+
+Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
+
 
 \section{Parker Neural Operator}
 
@@ -58,11 +75,11 @@ Given the unfulfilled knowledge about solar wind dynamics and low resolution nat
 
 \section{Coronagraph Analysis}
 
-\subsection{Data}
+\section{Data}
 
 \subsection{Architecture}
 
-\section{Pipeline}
+\section{Physics Informed Machine Learning Pipeline}
 
 \section{Results}
 
