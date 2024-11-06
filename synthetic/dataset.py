@@ -18,9 +18,9 @@ class SyntheticTask(DatasetLevel3):
         wind = DatasetLevel2(WINDDataset, base_scrap_date, step_size)
         soho = DatasetLevel2(SOHODataset, base_scrap_date, step_size)
         super().__init__(dscovr, ace, wind, soho)
-    def __getitem__(self, idx) -> Tuple[Tensor, ...]:
+    def __getitem__(self, idx) -> Tuple[Tensor, Tensor]:
         dscovr, ace, wind, soho = super().__getitem__(idx)
-        return torch.cat([dscovr, ace], dim = -1), torch.cat([wind, soho], dim = -1)
+        return torch.cat([wind, soho], dim = -1), torch.cat([dscovr, ace], dim = -1)
 
 class DataModule(DefaultDataModule):
     def __init__(self, batch_size: int, num_workers: int, pin_memory: bool, train_p: float, step_size: int) -> None:

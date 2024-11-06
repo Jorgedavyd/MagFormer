@@ -14,7 +14,7 @@ Physics informed loss
 
 class calc:
     @staticmethod
-    def grad(F: torch.Tensor, position: torch.Tensor, edge_order=1):
+    def grad(F: Tensor, position: Tensor, edge_order=1):
 
         df_dx = torch.gradient(
             F[:, :, 0], spacing=position[:, :, 0], dim=-1, edge_order=edge_order
@@ -29,22 +29,12 @@ class calc:
         return torch.cat([df_dx, df_dy, df_dz], dim=-1)
 
     @staticmethod
-    def div(F: torch.Tensor, position: torch.Tensor, edge_order=1):
+    def div(F: Tensor, position: Tensor, edge_order=1) -> Tensor:
         _, _, dimensions = F.shape
-        partial = []
-        for dim in range(dimensions):
-            partial.append(
-                torch.gradient(
-                    F[:, :, dim],
-                    spacing=(position[:, dim],),
-                    dim=-1,
-                    edge_order=edge_order,
-                )[0]
-            )
-        return sum(partial)
+        return torch.sum(torch.stack([torch.gradient(F[:,:,dim], spacing = (position[:,dim],), dim = -1, edge_order = edge_order)[0] for dim in range(dimensions)], dim = -1), dim = -1)
 
     @staticmethod
-    def rot(F: torch.Tensor, position: torch.Tensor, edge_order=1):
+    def rot(F: Tensor, position: Tensor, edge_order=1):
         assert len(F.shape) == 3
 
         dFz_dy = torch.gradient(
@@ -72,14 +62,14 @@ class calc:
         return torch.stack([dFz_dy - dFy_dz, dFx_dz - dFz_dx, dFy_dx - dFx_dy], dim=-1)
 
     @staticmethod
-    def dF_dt(F: torch.Tensor, step_size: timedelta, edge_order=1):
+    def dF_dt(F: Tensor, step_size: timedelta, edge_order=1):
         return torch.gradient(
             F, spacing=(step_size.total_seconds(),), dim=-2, edge_order=edge_order
         )[0]
 
     @staticmethod
     def conv_oper(
-        F: torch.Tensor, A: torch.Tensor, position: torch.Tensor, edge_order=1
+        F: Tensor, A: Tensor, position: Tensor, edge_order=1
     ):
 
         dFx_dx = torch.gradient(
@@ -112,24 +102,20 @@ class calc:
             F[:, :, 2], spacing=position[:, :, 2], dim=-1, edge_order=edge_order
         )
 
-        out_x = torch.Tensor(
+        out_x = Tensor(
             [A[:, :, 0] * dFx_dx + A[:, :, 1] * dFx_dy + A[:, :, 2] * dFx_dz]
         )
-        out_y = torch.Tensor(
+        out_y = Tensor(
             [A[:, :, 0] * dFy_dx + A[:, :, 1] * dFy_dy + A[:, :, 2] * dFy_dz]
         )
-        out_z = torch.Tensor(
+        out_z = Tensor(
             [A[:, :, 0] * dFz_dx + A[:, :, 1] * dFz_dy + A[:, :, 2] * dFz_dz]
         )
 
         return torch.cat([out_x, out_y, out_z], dim=-1)
 
-
 def gamma(v):
     return (sqrt(1 - (v**2 / c**2))) ** -1
-
-
-
 
 class IdealMHD(nn.Module):
     def __init__(
@@ -150,7 +136,7 @@ class IdealMHD(nn.Module):
                 }
             )
 
-        def forward(self, B: torch.Tensor, r: torch.Tensor) -> Tensor:
+        def forward(self, B: Tensor, r: Tensor) -> Tensor:
             """
             B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
             r: position of the spacecraft | torch.tensor | (batch_size, sequence_length, 3)
@@ -164,7 +150,7 @@ class IdealMHD(nn.Module):
                 factors = {self.__class__.__name__: factor}
             )
         def forward(
-            self, E: torch.Tensor, sigma: float, r: torch.Tensor
+            self, E: Tensor, sigma: float, r: Tensor
         ):
             """
             E: electric field | torch.tensor | (batch_size, sequence_length, 3)
@@ -179,7 +165,7 @@ class IdealMHD(nn.Module):
                 self.__class__.__name__,
                 {self.__class__.__name__: factor}
             )
-        def forward(self, B: torch.Tensor, E: torch.Tensor, v_drift: torch.Tensor) -> Tensor:
+        def forward(self, B: Tensor, E: Tensor, v_drift: Tensor) -> Tensor:
             """
             B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
             E: electric field | torch.tensor | (batch_size, sequence_length, 3)
@@ -195,12 +181,12 @@ class IdealMHD(nn.Module):
                 self.__class__.__name__,
                 {self.__class__.__name__: factor}
             )
-        def forward(self, rho: torch.Tensor, v: torch.Tensor) -> Tensor:
+        def forward(self, rho: Tensor, v: Tensor, r: Tensor) -> Tensor:
             """
             rho: mass density | torch.tensor | (batch_size, sequence_length)
             v: mass velocity field | torch.tensor | (batch_size, sequence_length, 3)
             """
-            return ((calc.dF_dt(rho, self.step_size) + calc.div(rho * v, position)) ** 2).mean()
+            return ((calc.dF_dt(rho, self.step_size) + calc.div(rho * v, r)) ** 2).mean()
 
     class StateConstraint(LighTorchLoss):
         def __init__(self, factor: float = 1.) -> None:
@@ -208,7 +194,7 @@ class IdealMHD(nn.Module):
                 self.__class__.__name__,
                 {self.__class__.__name__: factor}
             )
-        def forward(self, p: torch.Tensor, rho: torch.Tensor, N=3) -> Tensor:
+        def forward(self, p: Tensor, rho: Tensor, N=3) -> Tensor:
             """
             rho: mass density | torch.tensor | (batch_size, sequence_length)
             p: pressure | torch.tensor | (batch_size, sequence_length)
@@ -224,7 +210,7 @@ class IdealMHD(nn.Module):
                 self.__class__.__name__,
                 {self.__class__.__name__: factor}
             )
-        def forward(self, E: torch.Tensor, v: torch.Tensor, B: torch.Tensor) -> Tensor:
+        def forward(self, E: Tensor, v: Tensor, B: Tensor) -> Tensor:
             """
             B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
             E: electric field | torch.tensor | (batch_size, sequence_length, 3)
@@ -239,7 +225,7 @@ class IdealMHD(nn.Module):
                 factors = {self.__class__.__name__: factor}
             )
         def forward(
-            self, B: torch.Tensor, v: torch.Tensor, r: torch.Tensor, edge_order=1
+            self, B: Tensor, v: Tensor, r: Tensor
         ):
             """
             B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
@@ -247,8 +233,8 @@ class IdealMHD(nn.Module):
             """
             return (
                 (
-                    calc.dF_dt(B, self.step_size, edge_order)
-                    - calc.rot(torch.cross(v, B, dim=-1), r, edge_order)
+                    calc.dF_dt(B, self.step_size, self.edge_order)
+                    - calc.rot(torch.cross(v, B, dim=-1), r, self.edge_order)
                 )
                 ** 2
             ).mean()
@@ -259,7 +245,7 @@ class IdealMHD(nn.Module):
                 self.__class__.__name__,
                 {self.__class__.__name__: factor}
             )
-        def forward(self, B, J, r, edge_order=1) -> Tensor:
+        def forward(self, B, J, r) -> Tensor:
             """
             J: current density | torch.tensor | (batch_size, sequence_length)
             B: magnetic field | torch.tensor | (batch_size, sequence_length, 3)
@@ -267,8 +253,8 @@ class IdealMHD(nn.Module):
             return (
                 (
                     torch.cross(J, B, dim=-1)
-                    - calc.conv_oper(B, B, r, edge_order) / mu_0
-                    + calc.grad((torch.norm(B, 2, -1, True) ** 2) / (2 * mu_0))
+                    - calc.conv_oper(B, B, r, self.edge_order) / mu_0
+                    + calc.grad((torch.norm(B, 2, -1, True) ** 2) / (2 * mu_0), r, self.edge_order)
                 )
                 ** 2
             ).mean()

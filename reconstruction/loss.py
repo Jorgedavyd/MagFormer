@@ -1,4 +1,4 @@
-from ..mhd_constraints import MainCriterion
+from ..MHD.mhd_constraints import MainCriterion
 from typing import List
 
 ## temp, vel, B, Flow pressure, alfven,
@@ -11,6 +11,9 @@ factors: List[float] = [
     1.,
     1.,
 ]
+
+
+
 
 criterion = MainCriterion(
     valid_criterions,

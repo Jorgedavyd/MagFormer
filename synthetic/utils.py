@@ -65,4 +65,3 @@ def datetime_interval(
     return date_list
 
 
-
