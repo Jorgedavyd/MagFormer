@@ -1,28 +1,31 @@
 \contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
 \contentsline {section}{\numberline {2}Related Work}{4}{section.2}%
-\contentsline {section}{\numberline {3}Parker Neural Operator}{4}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Parker's Solar Wind model}{4}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Neural Operators}{4}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Parker Kernel}{4}{subsection.3.3}%
-\contentsline {section}{\numberline {4}Hermite Splines}{4}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Related Work}{5}{subsection.4.1}%
-\contentsline {section}{\numberline {5}Coronagraph Analysis}{5}{section.5}%
-\contentsline {section}{\numberline {6}Data}{5}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Architecture}{5}{subsection.6.1}%
-\contentsline {section}{\numberline {7}Physics Informed Machine Learning Pipeline}{5}{section.7}%
-\contentsline {section}{\numberline {8}Results}{5}{section.8}%
-\contentsline {section}{\numberline {9}Discussion}{5}{section.9}%
-\contentsline {section}{\numberline {10}Conclusion}{5}{section.10}%
-\contentsline {subsection}{\numberline {10.1}Momentum Equation (Navier-Stokes)}{5}{subsection.10.1}%
-\contentsline {subsection}{\numberline {10.2}Induction Equation}{5}{subsection.10.2}%
-\contentsline {subsection}{\numberline {10.3}Constraints}{6}{subsection.10.3}%
-\contentsline {section}{\numberline {11}Physics-Informed Neural Network Kernel}{6}{section.11}%
-\contentsline {subsection}{\numberline {11.1}Advection Term}{6}{subsection.11.1}%
-\contentsline {subsection}{\numberline {11.2}Induction Term}{6}{subsection.11.2}%
-\contentsline {subsection}{\numberline {11.3}Lorentz Force Term}{6}{subsection.11.3}%
-\contentsline {subsection}{\numberline {11.4}Residuals and Loss Function}{7}{subsection.11.4}%
-\contentsline {section}{\numberline {12}Numerical Implementation and Results}{7}{section.12}%
-\contentsline {subsection}{\numberline {12.1}Neural Network Architecture}{7}{subsection.12.1}%
-\contentsline {subsection}{\numberline {12.2}Training Procedure}{7}{subsection.12.2}%
-\contentsline {subsection}{\numberline {12.3}Results}{7}{subsection.12.3}%
-\contentsline {section}{\numberline {13}Conclusion}{7}{section.13}%
+\contentsline {subsection}{\numberline {2.1}Solar Wind modelling}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Physics informed Machine Learning}{4}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Data}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}DSCOVR: Deep Space Climate Observatory}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}ACE: Advanced Composition Explorer}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}WIND}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}SOHO: Solar and Heliospheric Observatory}{5}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}LASCO: Large Angle and Spectrometric Coronagraph Observatory}{5}{subsubsection.3.4.1}%
+\contentsline {section}{\numberline {4}Parker Neural Operator}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Parker's Solar Wind model}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Neural Operators}{6}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Parker Kernel}{6}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Learnable Hermite Splines for continuization}{6}{section.5}%
+\contentsline {section}{\numberline {6}Coronagraph Analysis}{6}{section.6}%
+\contentsline {section}{\numberline {7}Physics Informed Machine Learning Pipeline}{6}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Theoretical model}{6}{subsection.7.1}%
+\contentsline {subsubsection}{\numberline {7.1.1}Momentum Equation (Navier-Stokes)}{6}{subsubsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.2}Induction Equation}{6}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Architecture}{7}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Methodology}{7}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Neural Architecture Search (NAS)}{7}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Training Procedure}{7}{subsection.8.2}%
+\contentsline {section}{\numberline {9}Results}{7}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Coronagraph Model}{7}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}L1 Lagrange Model}{7}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Overall}{7}{subsection.9.3}%
+\contentsline {section}{\numberline {10}Discussion}{7}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Alternatives models}{7}{subsection.10.1}%
+\contentsline {section}{\numberline {11}Conclusion}{7}{section.11}%

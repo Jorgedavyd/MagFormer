@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{cite}
 
-\title{Solving MHD PDEs with Physics-Informed Neural Networks (PINNs)}
+\title{Physics informed Multi-Modal Networks for Solar Wind modeling}
 \author{Jorge Enciso}
 \date{\today}
 
@@ -25,14 +25,14 @@
 
 The solar wind phenomena is a vastly known event that arises from ionized solar outbursts into the stellar medium, commonly stimulating planets' magnetosphere. \cite{Gosling2007} The first record of a related event dates from 1859, popularly named "The Carrington event" after the English astronomer Richard Carrington (1826, 1875), who settled the intuition upon solar flares and geomagnetic fluctuations. Individuals from all around the glove sighted the Northern Lights, subtle variations in atmosphere's hues' tones, caused by ionized particles flowing through the ionosphere.
 
-Several attempts to model Solar Wind's dynamics can be pinpointed empirically: analytical methods \cite{}, numerical modelling \cite{2006LNCS.3732..554E, 10.3389/fspas.2023.1105797,10.1093/mnras/staa3533}, and machine learning approaches \cite{comp_1, comp_2, comp_3}. All of them with different purposes.
+Several attempts to model Solar Wind's dynamics can be pinpointed empirically: analytical methods \cite{}, numerical modelling \cite{2006LNCS.3732..554E, 10.3389/fspas.2023.1105797, windmodelling1}, and machine learning approaches \cite{comp_1, comp_2, comp_3}. All of them with different purposes.
 
-Traditional models and methodologies fail to account for the anysotropic nature of the Solar Wind. The Magnetohydrodynamics Model assumes a Boltzmann-Maxwellian distribution, doted with standard thermodynamical behavior. On the other hand, the Solar Wind is a collisionles plasma, precluding its inclusion solely within those boundaries. Thus, the present work emphasizes the usage of learnable neural operators engineered to empirically fit kinetic and dynamical descriptions.
+Traditional models and methodologies fail to account for the anysotropic nature of the Solar Wind. The Magnetohydrodynamics Model assumes a Boltzmann-Maxwellian distribution, doted with standard thermodynamical behavior. On the other hand, the Solar Wind is a collisionles plasma, precluding its inclusion solely within those boundaries. Thus, the present work emphasizes the usage of learnable neural operators engineered to analytically and empirically fit kinetic descriptions.
 
 Moreover, kinetic frames based on Maxwellian electromagnetism tend to be computationally expensive for the microscopic and macroscopic frame:
 
 \begin{equation}
-    n_{\alpha} (r, t) := \int f_{\alpha}(r, v, t) d^3v
+    n_{\alpha} (\mathbf{r}, t) := \int f_{\alpha}(\mathbf{r}, \mathbf{v}, t) d^3v
 \end{equation}
 
 \begin{equation}
@@ -40,11 +40,11 @@ Moreover, kinetic frames based on Maxwellian electromagnetism tend to be computa
 \end{equation}
 
 \begin{equation}
-    u_{\alpha} (r, t) := \frac{1}{n_{\alpha}(r, t)} \int v f_{\alpha}(r, v, t) d^3v
+    \mathbf{u_{\alpha}} (\mathbf{r}, t) := \frac{1}{n_{\alpha}(\mathbf{r}, t)} \int v f_{\alpha}(\mathbf{r}, v, t) d^3v
 \end{equation}
 
 \begin{equation}
-    j(r, t) := \sum q_{\alpha} n_{\alpha} u_{\alpha}
+    j(\mathbf{r}, t) := \sum q_{\alpha} n_{\alpha} \mathbf{u_{\alpha}}
 \end{equation}
 
 where $n_{\alpha}$ is the particle density, $u_{\alpha}$ the particle's drift velocity, $\tau(r, t)$ is the charge density, $j(r, t)$ is the current density, and $f_{\alpha}(r, v, t)$ is the Boltzmann's density function.
@@ -52,9 +52,33 @@ where $n_{\alpha}$ is the particle density, $u_{\alpha}$ the particle's drift ve
 Yet modern physics informed machine learning research schemes enable faster inference time and less computational load: embedding systems' equations within the loss function and constraining network's backbone based on empirical approaches.
 
 \section{Related Work}
+
+\subsection{Solar Wind modelling}
+
+\subsection{Physics informed Machine Learning}
+
 Magnetohydrodynamics (MHD) is the study of the behavior of electrically conducting fluids in the presence of magnetic fields. The governing equations of MHD consist of the magnetohydrodynamic induction equation and the momentum equation, which couple the dynamics of the fluid and magnetic fields. These systems of partial differential equations are complex and non-linear, making them challenging to solve with traditional numerical methods.
 
 Physics-Informed Neural Networks (PINNs) offer a powerful framework for solving PDEs by embedding the physical laws directly into the loss function during the network's training. This approach has shown promising results for solving a variety of PDEs in physics and engineering. In this work, we investigate the use of PINNs to solve MHD PDEs and propose a custom kernel that incorporates the physical terms of MHD, such as advection, induction, and Lorentz forces, into the neural network's architecture.
+
+\section{Data}
+
+\subsection{DSCOVR: Deep Space Climate Observatory}
+DSCOVR, a joint mission between NASA and the National Oceanic and Atmospheric Administration, is a crucial observational platform for monitoring space weather \cite{nasa_dscovr}. Launched in 2015, DSCOVR's primary mission is to monitor and provide advanced warning of potentially hazardous space weather events such as solar flares and coronal mass ejections that could impact Earth.
+
+It is equipped with two key instruments for measuring both energetic particle incidence and magnetic field parameters: the Faraday cup and the magnetometer from the PlasMag instrument \cite{nasa_dscovr}. The readings from these two sensors are crucial for virtually analyzing plasma dynamics near the L1 Lagrange point. These readings will be used as part of the core model data due to their real-time availability.
+
+\subsection{ACE: Advanced Composition Explorer}
+ACE, launched in 1997, provides continuous measurements of the solar wind and interstellar particles. It is equipped with several instruments designed to study the composition of solar and galactic particles, which are crucial for understanding the space weather environment. ACE's data helps in predicting geomagnetic storms and contributes to our understanding of the heliosphere.
+
+\subsection{WIND}
+The WIND spacecraft, launched in 1994, is part of the Global Geospace Science initiative. It provides comprehensive measurements of the solar wind, magnetic fields, and energetic particles. WIND's data is essential for understanding the fundamental processes of the solar wind and its interaction with the Earth's magnetosphere.
+
+\subsection{SOHO: Solar and Heliospheric Observatory}
+SOHO, a joint project of ESA and NASA, was launched in 1995. It is designed to study the Sun from its core to the outer corona and the solar wind.
+
+\subsubsection{LASCO: Large Angle and Spectrometric Coronagraph Observatory}
+LASCO, one of the instruments on SOHO, observes the solar corona by creating an artificial eclipse. It is instrumental in detecting coronal mass ejections, which are significant drivers of space weather.
 
 
 \section{Parker Neural Operator}
@@ -66,28 +90,17 @@ Parker's model of Solar wind establishes a radial outward propagation of the pla
 
 \subsection{Parker Kernel}
 
-\section{Hermite Splines}
+\section{Learnable Hermite Splines for continuization}
 
 Implicit PINN research usually enriches datasets with high resolution simulation data. High resolution data plays an important role within the machine learning PDE solvers. Numerical integration methods' accuracy decays as the data resolution does so.
-Given the unfulfilled knowledge about solar wind dynamics and low resolution nature of the data, this work utilizes polynomial interpolation methods with empirical backup \cite{DBLP:journals/corr/abs-2109-07143} to convert the discrete problem into continuous.
-
-\subsection{Related Work}
+Given the unfulfilled knowledge about solar wind dynamics and low resolution nature of the data, this work utilizes polynomial interpolation methods with empirical backup \cite{windmodelling1} to convert the discrete problem into continuous.
 
 \section{Coronagraph Analysis}
 
-\section{Data}
-
-\subsection{Architecture}
-
 \section{Physics Informed Machine Learning Pipeline}
 
-\section{Results}
-
-\section{Discussion}
-
-\section{Conclusion}
-
-\subsection{Momentum Equation (Navier-Stokes)}
+\subsection{Theoretical model}
+\subsubsection{Momentum Equation (Navier-Stokes)}
 The momentum equation for an incompressible, electrically conducting fluid is given by:
 \begin{equation}
 \frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u} \cdot \nabla) \mathbf{u} = -\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{J} \times \mathbf{B},
@@ -101,58 +114,32 @@ The induction equation describes the evolution of the magnetic field \( \mathbf{
 \end{equation}
 where \( \eta \) is the magnetic diffusivity.
 
-\subsection{Constraints}
-To ensure the magnetic field remains divergence-free, we impose the constraint:
-\begin{equation}
-\nabla \cdot \mathbf{B} = 0.
-\end{equation}
+\subsection{Architecture}
 
-\section{Physics-Informed Neural Network Kernel}
-The goal of the Physics-Informed Neural Network is to minimize the residuals of the PDEs by incorporating the physical operators (advection, induction, Lorentz force) into the loss function.
+\section{Methodology}
 
-\subsection{Advection Term}
-The advection term for the velocity field \( \mathbf{u} \) is given by:
-\begin{equation}
-(\mathbf{u} \cdot \nabla) \mathbf{u},
-\end{equation}
-which represents the non-linear convective term in the momentum equation.
-
-\subsection{Induction Term}
-The induction term for the magnetic field \( \mathbf{B} \) is:
-\begin{equation}
-\nabla \times (\mathbf{u} \times \mathbf{B}),
-\end{equation}
-which represents the evolution of the magnetic field due to the fluid flow.
-
-\subsection{Lorentz Force Term}
-The Lorentz force term is the cross product of the current density \( \mathbf{J} \) and the magnetic field \( \mathbf{B} \). Using the relation \( \mathbf{J} = \nabla \times \mathbf{B} \), the Lorentz force can be expressed as:
-\begin{equation}
-\mathbf{J} \times \mathbf{B} = (\nabla \times \mathbf{B}) \times \mathbf{B}.
-\end{equation}
-
-\subsection{Residuals and Loss Function}
-The residuals for the MHD equations are computed by evaluating the PDE terms at each point in space and time. The overall loss function \( L_{\text{MHD}} \) is defined as:
-\begin{equation}
-L_{\text{MHD}} = \sum_i \left( \left| \text{Residual at point } x_i \right|^2 \right),
-\end{equation}
-which ensures that the neural network learns to satisfy the MHD equations during training.
-
-\section{Numerical Implementation and Results}
-\subsection{Neural Network Architecture}
-The neural network consists of fully connected layers with activation functions that allow for the efficient learning of the velocity and magnetic field solutions. We use a standard feed-forward neural network architecture, where the input consists of spatial and temporal coordinates and the output gives the predicted velocity and magnetic field.
+\subsection{Neural Architecture Search (NAS)}
+The network is trained using a standard optimization algorithm such as Adam. During training, we compute the residuals for the momentum and induction equations, as well as the divergence-free constraint for the magnetic field, and include them in the loss function.
 
 \subsection{Training Procedure}
 The network is trained using a standard optimization algorithm such as Adam. During training, we compute the residuals for the momentum and induction equations, as well as the divergence-free constraint for the magnetic field, and include them in the loss function.
 
-\subsection{Results}
-The neural network was able to approximate the solution to the MHD equations under various boundary conditions. The results were validated against known analytical solutions for simple test cases, and the PINN-based approach demonstrated significant accuracy and efficiency.
+\section{Results}
+
+\subsection{Coronagraph Model}
+
+\subsection{L1 Lagrange Model}
+
+\subsection{Overall}
+
+\section{Discussion}
+
+\subsection{Alternatives models}
 
 \section{Conclusion}
-In this work, we have demonstrated the effectiveness of Physics-Informed Neural Networks for solving Magnetohydrodynamics PDEs. By embedding the governing physical equations directly into the loss function, we can efficiently train a neural network to approximate the solution of complex, non-linear systems. Future work will focus on improving the kernel design and extending the approach to more complicated MHD scenarios.
-
+This work demonstrated the effectiveness of Physics-Informed Neural Networks to model Solar Wind's behavior tied to diverse empirical and analytical formulations. By embedding the governing physical equations directly into the loss function, we can efficiently train a neural network to approximate the solution of this complex, non-linear system. Future work will focus on improving the kernel design and extending the approach to more sophisticated MHD scenarios, such as the interactions between Solar Wind and Sun's magnetosphere.
 
 \bibliographystyle{plain}
+
 \bibliography{references}
-
 \end{document}
-

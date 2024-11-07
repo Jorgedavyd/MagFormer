@@ -15,20 +15,19 @@ J.~T. Gosling.
 \newblock {\em The Solar Wind}.
 \newblock Elsevier, 2007.
 
-\bibitem{10.1093/mnras/staa3533}
+\bibitem{windmodelling1}
 Takuma Matsumoto.
 \newblock {Full compressible 3D MHD simulation of solar wind}.
 \newblock {\em Monthly Notices of the Royal Astronomical Society}, 500(4):4779--4787, 11 2020.
+
+\bibitem{nasa_dscovr}
+{National Aeronautics and Space Administration}.
+\newblock Dscovr mission overview, 2023.
 
 \bibitem{comp_3}
 AS~Parnowski.
 \newblock Regression modeling method of space weather prediction.
 \newblock {\em Astrophysics and Space Science}, 323(2):169--180, 2009.
-
-\bibitem{DBLP:journals/corr/abs-2109-07143}
-Nils Wandel, Michael Weinmann, Michael Neidlin, and Reinhard Klein.
-\newblock Spline-pinn: Approaching pdes without data using fast, physics-informed hermite-spline cnns.
-\newblock {\em CoRR}, abs/2109.07143, 2021.
 
 \bibitem{comp_1}
 Iris Yan.
